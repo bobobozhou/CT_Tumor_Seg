@@ -9,9 +9,9 @@ clc
 % 2. Crop tumor bbox (<70pixels: 70x70 ; >70pixels: resample->70x70)
 
 %% load raw 3d data
-data_dir = '../../Data/Raw_DATA/3D';
+data_dir = '../../Data/public_data/Raw_DATA/3D';
 files = dir(data_dir);
-save_dir = '../../Data/';
+save_dir = '../../Data/public_data/';
 
 fileID_train = fopen(strcat(save_dir,'dir/','train_list.txt'),'w');
 fileID_test = fopen(strcat(save_dir,'dir/','test_list.txt'),'w');
