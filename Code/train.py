@@ -33,6 +33,8 @@ from myloss import *
 
 '''Set up Training Parameters'''
 parser = argparse.ArgumentParser(description='Pytorch: Scale-Invariant Boundary Aware CNN')
+parser.add_argument('--model_name', default='SiBANet',
+                    help='model name used for SiBA-Net (no semi-supervised)')
 parser.add_argument('--workers', default=4, type=int, metavar='N',
                     help='number of data loading worker')
 parser.add_argument('--epochs', default=600, type=int, metavar='N',
@@ -55,18 +57,18 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 
 '''Set up Data Directory'''
-parser.add_argument('--image_data_dir', default='../Data/image', type=str, metavar='PATH',
+parser.add_argument('--image_data_dir', default='../Data/public_data/image', type=str, metavar='PATH',
                     help='path to image data')
-parser.add_argument('--mask_data_dir', default='../Data/mask', type=str, metavar='PATH',
+parser.add_argument('--mask_data_dir', default='../Data/public_data/mask', type=str, metavar='PATH',
                     help='path to mask data')
-parser.add_argument('--edge_data_dir', default='../Data/edge', type=str, metavar='PATH',
+parser.add_argument('--edge_data_dir', default='../Data/public_data/edge', type=str, metavar='PATH',
                     help='path to edge data')
 
-parser.add_argument('--train_list_dir', default='../Data/dir/train_list.txt', type=str, metavar='PATH',
+parser.add_argument('--train_list_dir', default='../Data/public_data/dir/train_list.txt', type=str, metavar='PATH',
                     help='path to train data list txt file')
-parser.add_argument('--val_list_dir', default='../Data/dir/val_list.txt', type=str, metavar='PATH',
+parser.add_argument('--val_list_dir', default='../Data/public_data/dir/val_list.txt', type=str, metavar='PATH',
                     help='path to validation data list txt file')
-parser.add_argument('--test_list_dir', default='../Data/dir/test_list.txt', type=str, metavar='PATH',
+parser.add_argument('--test_list_dir', default='../Data/public_data/dir/test_list.txt', type=str, metavar='PATH',
                     help='path to test data list txt file')
 
 n_classes = 4
@@ -136,7 +138,7 @@ def main():
     val_dataset = CTTumorDataset(image_data_dir=args.image_data_dir,
                                  label_data_dir=args.mask_data_dir,
                                  edge_data_dir=args.edge_data_dir,
-                                 list_file=args.val_list_dir,
+                                 list_file=args.test_list_dir,
                                  transform=
                                  transforms.Compose(
                                      [transforms.Resize(256),

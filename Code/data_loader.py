@@ -23,7 +23,7 @@ class CTTumorDataset(Dataset):
         self.class_name = ['Lung', 'Breast', 'Skin', 'Liver']
 
         image_names = []
-        label_names = []
+        mask_names = []
         edge_names = []
         class_vecs = []
         with open(list_file, "r") as f:
@@ -34,9 +34,9 @@ class CTTumorDataset(Dataset):
                 image_name = os.path.join(image_data_dir, image_name)
                 image_names.append(image_name)
 
-                label_name = items[1]
-                label_name = os.path.join(label_data_dir, label_name)
-                label_names.append(label_name)
+                mask_name = items[1]
+                mask_name = os.path.join(label_data_dir, mask_name)
+                mask_names.append(mask_name)
 
                 edge_name = items[3]
                 edge_name = os.path.join(edge_data_dir, edge_name)
@@ -47,7 +47,7 @@ class CTTumorDataset(Dataset):
                 class_vecs.append(class_vec)
 
         self.image_names = image_names
-        self.label_names = label_names
+        self.mask_names = mask_names
         self.edge_names = edge_names
         self.class_vecs = class_vecs
         self.transform = transform
@@ -65,8 +65,8 @@ class CTTumorDataset(Dataset):
         image = Image.open(image_name).convert('RGB')
 
         # label/annotation loader
-        label_name = self.label_names[index]
-        label = Image.open(label_name)
+        mask_name = self.mask_names[index]
+        mask = Image.open(mask_name)
 
         # edge/boundary loader
         edge_name = self.edge_names[index]
@@ -77,10 +77,10 @@ class CTTumorDataset(Dataset):
 
         if self.transform is not None:
             image = self.transform(image)
-            label = self.transform(label)
+            mask = self.transform(mask)
             edge = self.transform(edge)
 
-        return image, label, edge, torch.FloatTensor(class_vec)
+        return image, mask, edge, torch.FloatTensor(class_vec)
 
     def __len__(self):
         return len(self.image_names)
