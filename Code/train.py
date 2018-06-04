@@ -129,8 +129,8 @@ def main():
                                        [transforms.Resize(256),
                                         transforms.RandomCrop(224),
                                         transforms.ToTensor(),
-                                        normalize,
-                                        ]))
+                                        ]), 
+                                   norm=normalize)
     train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size,
                               shuffle=True, num_workers=args.workers, pin_memory=True)
 
@@ -145,7 +145,8 @@ def main():
                                       transforms.RandomCrop(224),
                                       transforms.ToTensor(),
                                       normalize,
-                                      ]))
+                                      ]), 
+                                 norm=normalize)
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size,
                             shuffle=False, num_workers=args.workers, pin_memory=True)
 
@@ -186,6 +187,7 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
         edge_var = torch.autograd.Variable(edge, requires_grad=True).cuda()
         class_vec = class_vec.type(torch.FloatTensor).cuda(async=True)
         class_vec_var = torch.autograd.Variable(class_vec)
+        ipdb.set_trace()
 
         # 1) output BOUNDARY, REGION, FINAL_REGION from models
         output_ba, output_rg, output_fin = model(input_var)

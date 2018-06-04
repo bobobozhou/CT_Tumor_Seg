@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from torch.utils.data import Dataset
 from PIL import Image
 import os
@@ -8,7 +9,7 @@ import ipdb
 class CTTumorDataset(Dataset):
     """"CT Tumor 2D Data loader"""
 
-    def __init__(self, image_data_dir, label_data_dir, edge_data_dir, list_file, transform=None):
+    def __init__(self, image_data_dir, label_data_dir, edge_data_dir, list_file, transform=None, norm=None):
 
         """
         Args:
@@ -51,6 +52,7 @@ class CTTumorDataset(Dataset):
         self.edge_names = edge_names
         self.class_vecs = class_vecs
         self.transform = transform
+        self.norm = norm
 
     def __getitem__(self, index):
         """
@@ -62,21 +64,22 @@ class CTTumorDataset(Dataset):
         """
         # image loader
         image_name = self.image_names[index]
-        image = Image.open(image_name).convert('RGB')
+        image = np.array(Image.open(image_name))
 
         # label/annotation loader
         mask_name = self.mask_names[index]
-        mask = Image.open(mask_name).convert('L')
+        mask = np.array(Image.open(mask_name))
 
         # edge/boundary loader
         edge_name = self.edge_names[index]
-        edge = Image.open(edge_name).convert('L')
+        edge = np.array(Image.open(edge_name))
 
         # class vector loader
         class_vec = self.class_vecs[index]
+        ipdb.set_trace()
 
         if self.transform is not None:
-            image = self.transform(image)
+            image = self.transform(image); image = self.norm(image)
             mask = self.transform(mask)
             edge = self.transform(edge)
 
