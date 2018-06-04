@@ -180,9 +180,9 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
 
     # switch to training mode and train
     model.train()
-    for i, (input, label, edge, class_vec) in enumerate(train_loader):
+    for i, (input, mask, edge, class_vec) in enumerate(train_loader):
         input_var = torch.autograd.Variable(input, requires_grad=True).cuda()
-        label_var = torch.autograd.Variable(label, requires_grad=True).cuda()
+        mask_var = torch.autograd.Variable(mask, requires_grad=True).cuda()
         edge_var = torch.autograd.Variable(edge, requires_grad=True).cuda()
         class_vec = class_vec.type(torch.FloatTensor).cuda(async=True)
         class_vec_var = torch.autograd.Variable(class_vec)
@@ -192,8 +192,8 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
 
         # 2) compute the current loss: loss_boundary, loss_region, loss_final_region
         loss_ba = criterion(output_ba, edge_var)
-        loss_rg = criterion(output_rg, label_var)
-        loss_fin = criterion(output_fin, label_var)
+        loss_rg = criterion(output_rg, mask_var)
+        loss_fin = criterion(output_fin, mask_var)
         loss = loss_ba + loss_rg + loss_fin
 
         # 3) record loss and metrics (mAp & ROC)
@@ -232,7 +232,7 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
 
     # switch to evaluation mode and evaluate
     model.eval()
-    for i, (input, target) in enumerate(val_loader):
+    for i, (input, mask, edge, class_vec) in enumerate(val_loader):
         input_var = torch.autograd.Variable(input, requires_grad=True).cuda()
         target = target.type(torch.FloatTensor).cuda(async=True)
         target_var = torch.autograd.Variable(target)

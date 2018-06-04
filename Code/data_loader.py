@@ -38,7 +38,7 @@ class CTTumorDataset(Dataset):
                 mask_name = os.path.join(label_data_dir, mask_name)
                 mask_names.append(mask_name)
 
-                edge_name = items[3]
+                edge_name = items[2]
                 edge_name = os.path.join(edge_data_dir, edge_name)
                 edge_names.append(edge_name)
 
@@ -66,11 +66,11 @@ class CTTumorDataset(Dataset):
 
         # label/annotation loader
         mask_name = self.mask_names[index]
-        mask = Image.open(mask_name)
+        mask = Image.open(mask_name).convert('L')
 
         # edge/boundary loader
         edge_name = self.edge_names[index]
-        edge = Image.open(edge_name)
+        edge = Image.open(edge_name).convert('L')
 
         # class vector loader
         class_vec = self.class_vecs[index]
