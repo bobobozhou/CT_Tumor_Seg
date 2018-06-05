@@ -41,7 +41,7 @@ parser.add_argument('--epochs', default=600, type=int, metavar='N',
                     help='number of epochs for training network')
 parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('--batch_size', default=128, type=int, metavar='N',
+parser.add_argument('--batch_size', default=32, type=int, metavar='N',
                     help='mini-batch size for training (default: 64)')
 parser.add_argument('--lr', default=0.002, type=float, metavar='LR',
                     help='initial learning rate')
@@ -75,6 +75,7 @@ n_classes = 4
 class_names = ['Lung', 'Breast', 'Skin', 'Liver']
 para_mean = np.array([0.485, 0.456, 0.406])
 para_std = np.array([0.229, 0.224, 0.225])
+w_ba = 1; w_rg = 1; w_fin = 1
 best_m1 = 0
 
 
@@ -126,8 +127,8 @@ def main():
                                    list_file=args.train_list_dir,
                                    transform=
                                    transforms.Compose(
-                                       [transforms.Resize(256),
-                                        transforms.RandomCrop(224),
+                                       [transforms.Resize(128),
+                                        transforms.RandomCrop(112),
                                         transforms.ToTensor(),
                                         ]), 
                                    norm=normalize)
@@ -141,8 +142,8 @@ def main():
                                  list_file=args.test_list_dir,
                                  transform=
                                  transforms.Compose(
-                                     [transforms.Resize(256),
-                                      transforms.RandomCrop(224),
+                                     [transforms.Resize(128),
+                                      transforms.RandomCrop(112),
                                       transforms.ToTensor(),
                                       normalize,
                                       ]), 
@@ -183,9 +184,9 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
     model.train()
     for i, (input, mask, edge, class_vec) in enumerate(train_loader):
         input_var = torch.autograd.Variable(input, requires_grad=True).cuda()
-        mask_var = torch.autograd.Variable(mask, requires_grad=True).cuda()
-        edge_var = torch.autograd.Variable(edge, requires_grad=True).cuda()
-        class_vec = class_vec.type(torch.FloatTensor).cuda(async=True)
+        mask_var = torch.autograd.Variable(mask).type(torch.FloatTensor).cuda()
+        edge_var = torch.autograd.Variable(edge).type(torch.FloatTensor).cuda()
+        class_vec = class_vec.type(torch.FloatTensor).cuda()
         class_vec_var = torch.autograd.Variable(class_vec)
 
         # 1) output BOUNDARY, REGION, FINAL_REGION from models
@@ -195,10 +196,10 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
         loss_ba = criterion(output_ba, edge_var)
         loss_rg = criterion(output_rg, mask_var)
         loss_fin = criterion(output_fin, mask_var)
-        loss = loss_ba + loss_rg + loss_fin
+        loss = w_ba*loss_ba + w_rg*loss_rg + w_fin*loss_fin
 
         # 3) record loss and metrics (mAp & ROC)
-        m1, all_ap = metric1()
+        m1, all_ap = metric1(output_fin, mask)
         losses.update(loss.data[0], input.size(0))
         avg_m1.update(m1[0], input.size(0))
 
