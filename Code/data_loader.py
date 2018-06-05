@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from torch.utils.data import Dataset
+from torchvision.transforms import transforms
 from PIL import Image
 import os
 import ipdb
@@ -64,24 +65,31 @@ class CTTumorDataset(Dataset):
         """
         # image loader
         image_name = self.image_names[index]
-        image = np.array(Image.open(image_name))
+        image = Image.open(image_name).convert('I')
 
         # label/annotation loader
         mask_name = self.mask_names[index]
-        mask = np.array(Image.open(mask_name))
+        mask = Image.open(mask_name).convert('I')
 
         # edge/boundary loader
         edge_name = self.edge_names[index]
-        edge = np.array(Image.open(edge_name))
+        edge = Image.open(edge_name).convert('I')
 
         # class vector loader
         class_vec = self.class_vecs[index]
-        ipdb.set_trace()
 
         if self.transform is not None:
-            image = self.transform(image); image = self.norm(image)
-            mask = self.transform(mask)
-            edge = self.transform(edge)
+            image = self.transform(image).numpy()
+            mask = self.transform(mask).numpy()
+            edge = self.transform(edge).numpy()
+
+            image = np.repeat(image, 3, axis=0)
+            mask = np.concatenate((mask, 1-mask), axis=0)
+            edge = np.concatenate((edge, 1-edge), axis=0)
+
+            image = torch.from_numpy(image).float(); image = self.norm(image)
+            mask = torch.from_numpy(mask)
+            edge = torch.from_numpy(edge)
 
         return image, mask, edge, torch.FloatTensor(class_vec)
 

@@ -41,7 +41,7 @@ parser.add_argument('--epochs', default=600, type=int, metavar='N',
                     help='number of epochs for training network')
 parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('--batch_size', default=64, type=int, metavar='N',
+parser.add_argument('--batch_size', default=128, type=int, metavar='N',
                     help='mini-batch size for training (default: 64)')
 parser.add_argument('--lr', default=0.002, type=float, metavar='LR',
                     help='initial learning rate')
@@ -187,7 +187,6 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
         edge_var = torch.autograd.Variable(edge, requires_grad=True).cuda()
         class_vec = class_vec.type(torch.FloatTensor).cuda(async=True)
         class_vec_var = torch.autograd.Variable(class_vec)
-        ipdb.set_trace()
 
         # 1) output BOUNDARY, REGION, FINAL_REGION from models
         output_ba, output_rg, output_fin = model(input_var)

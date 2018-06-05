@@ -151,32 +151,32 @@ class SiBANET(nn.Module):
                     w2_1, b2_1, w2_2, b2_2,
                     w3_1, b3_1, w3_2, b3_2, w3_3, b3_3):
 
-        sz1_1 = np.concatenate((np.array(self.conv_weight64_sc1_1.size()[:2]),
-                                scale * np.array(self.conv_weight64_sc1_1.size()[2:])), axis=0)
-        sz1_2 = np.concatenate((np.array(self.conv_weight64_sc1_2.size()[:2]),
-                                scale * np.array(self.conv_weight64_sc1_2.size()[2:])), axis=0)
+        sz1_1 = np.concatenate((np.array(w1_1.size()[:2]),
+                                scale * np.array(w1_1.size()[2:])), axis=0)
+        sz1_2 = np.concatenate((np.array(self.w1_2.size()[:2]),
+                                scale * np.array(self.w1_2.size()[2:])), axis=0)
         x = F.conv2d(x, weight=w1_1.resize_(sz1_1), bias=b1_1, stride=1, padding=2)
         x = F.leaky_relu(x)
         x = F.conv2d(x, weight=w1_2.resize_(sz1_2), bias=b1_2, stride=1, padding=2)
         x = F.leaky_relu(x)
         x_out1 = F.max_pool2d(x, kernel_size=2, stride=2)
 
-        sz2_1 = np.concatenate((np.array(self.conv_weight128_sc1_1.size()[:2]),
-                                scale * np.array(self.conv_weight128_sc1_1.size()[2:])), axis=0)
-        sz2_2 = np.concatenate((np.array(self.conv_weight128_sc1_2.size()[:2]),
-                                scale * np.array(self.conv_weight128_sc1_2.size()[2:])), axis=0)
+        sz2_1 = np.concatenate((np.array(w2_1.size()[:2]),
+                                scale * np.array(w2_1.size()[2:])), axis=0)
+        sz2_2 = np.concatenate((np.array(w2_2.size()[:2]),
+                                scale * np.array(w2_2.size()[2:])), axis=0)
         x = F.conv2d(x_out1, weight=w2_1.resize_(sz2_1), bias=b2_1, stride=1, padding=2)
         x = F.leaky_relu(x)
         x = F.conv2d(x, weight=w2_2.resize_(sz2_2), bias=b2_2, stride=1, padding=2)
         x = F.leaky_relu(x)
         x_out2 = F.max_pool2d(x, kernel_size=2, stride=2)
 
-        sz3_1 = np.concatenate((np.array(self.conv_weight256_sc1_1.size()[:2]),
-                                scale * np.array(self.conv_weight256_sc1_1.size()[2:])), axis=0)
-        sz3_2 = np.concatenate((np.array(self.conv_weight256_sc1_2.size()[:2]),
-                                scale * np.array(self.conv_weight256_sc1_2.size()[2:])), axis=0)
-        sz3_3 = np.concatenate((np.array(self.conv_weight256_sc1_3.size()[:2]),
-                                scale * np.array(self.conv_weight256_sc1_3.size()[2:])), axis=0)
+        sz3_1 = np.concatenate((np.array(w3_1.size()[:2]),
+                                scale * np.array(w3_1.size()[2:])), axis=0)
+        sz3_2 = np.concatenate((np.array(w3_2.size()[:2]),
+                                scale * np.array(w3_2.size()[2:])), axis=0)
+        sz3_3 = np.concatenate((np.array(w3_3.size()[:2]),
+                                scale * np.array(w3_3.size()[2:])), axis=0)
         x = F.conv2d(x_out2, weight=w3_1.resize_(sz3_1), bias=b3_1, stride=1, padding=2)
         x = F.leaky_relu(x)
         x = F.conv2d(x, weight=w3_2.resize_(sz3_2), bias=b3_2, stride=1, padding=2)
