@@ -120,8 +120,8 @@ def make_tf_disp(output, target):
     if output.shape != target.shape:
         raise ValueError("Shape mismatch: Prectiction and Ground-Truth must have the same shape!")
 
-    output = output[np.newaxis, np.newaxis, :, :]
-    target = target[np.newaxis, np.newaxis, :, :]
+    output = np.repeat(output[np.newaxis, np.newaxis, :, :], 3, axis=1)
+    target = np.repeat(target[np.newaxis, np.newaxis, :, :], 3, axis=1)
     disp_mat = np.concatenate((output, target), axis=0)
 
     return disp_mat

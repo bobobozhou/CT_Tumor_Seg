@@ -49,7 +49,7 @@ parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum for the training optimizer')
 parser.add_argument('--wd', default=1e-4, type=float, metavar='W',
                     help='weight decay (default: 1e-4)')
-parser.add_argument('-pf', default=10, type=int, metavar='N',
+parser.add_argument('-pf', default=1, type=int, metavar='N',
                     help='training print frequency (default: 10)')
 parser.add_argument('--ef', default=2, type=int, metavar='N',
                     help='evaluate print frequency (default: 2)')
@@ -160,6 +160,7 @@ def main():
 
         # train for one epoch
         train(train_loader, model, criterion, optimizer, epoch, data_logger=data_logger, class_names=class_names)
+        ipdb.set_trace()
 
         # evaluate on validation set
         if epoch % args.ef == 0 or epoch == args.epochs:
@@ -251,8 +252,6 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
         data_logger.image_summary(tag='train/image_boundary' + tag_inf, images=output_ba_disp, step=i + len(train_loader) * epoch)
         data_logger.image_summary(tag='train/image_INTregion' + tag_inf, images=output_rg_disp, step=i + len(train_loader) * epoch)
         data_logger.image_summary(tag='train/image_FINregion' + tag_inf, images=output_fin_disp, step=i + len(train_loader) * epoch)
-
-        ipdb.set_trace()
 
 
 def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=None):
