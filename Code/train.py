@@ -28,7 +28,7 @@ from sklearn.metrics import roc_auc_score, average_precision_score
 from logger import Logger
 from data_loader import *
 from model import *
-from myloss import *
+from utilizes import *
 
 
 '''Set up Training Parameters'''
@@ -76,7 +76,7 @@ class_names = ['Lung', 'Breast', 'Skin', 'Liver']
 para_mean = np.array([0.485, 0.456, 0.406])
 para_std = np.array([0.229, 0.224, 0.225])
 w_ba = 1; w_rg = 1; w_fin = 1
-best_m1 = 0
+best_m = 0
 
 
 def main():
@@ -163,9 +163,9 @@ def main():
 
         # evaluate on validation set
         if epoch % args.ef == 0 or epoch == args.epochs:
-            m1 = validate(val_loader, model, criterion, epoch, data_logger=data_logger, class_names=class_names)
+            m = validate(val_loader, model, criterion, epoch, data_logger=data_logger, class_names=class_names)
             # remember best prec@1 and save checkpoint
-            is_best = m1 > best_m1
+            is_best = m > best_m
             best_m1 = max(m1, best_m1)
             save_checkpoint({
                 'epoch': epoch + 1,
@@ -181,11 +181,11 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
     losses_rg = AverageMeter()
     losses_fin = AverageMeter()
     losses = AverageMeter()
-    avg_m = AverageMeter()
+    avg_mDSCs = AverageMeter()
 
     # switch to training mode and train
     model.train()
-    for i, (input, mask, edge, class_vec) in enumerate(train_loader):
+    for i, (case_ind, input, mask, edge, class_vec) in enumerate(train_loader):
         input_var = torch.autograd.Variable(input, requires_grad=True).cuda()
         mask_var = torch.autograd.Variable(mask).type(torch.FloatTensor).cuda()
         edge_var = torch.autograd.Variable(edge).type(torch.FloatTensor).cuda()
@@ -207,35 +207,52 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
         losses_fin.update(loss_fin.data[0], input.size(0))
         losses.update(loss.data[0], input.size(0))
 
-        m, all_DCS_slice = metric_DSC_slice(output_fin, mask_var)
-        avg_m.update(m[0], input.size(0))
+        output_fin_np = output_fin.data.cpu().numpy()   #display predicted & calculate final region
+        mask_np = mask_var.data.cpu().numpy()
+        mDSCs, all_DCS_slice = metric_DSC_slice(output_fin_np, mask_np)
+        avg_mDSCs.update(mDSCs[0], input.size(0))
+
+        output_ba_np = output_ba.data.cpu().numpy()  #display predicted boundary
+        output_rg_np = output_rg.data.cpu().numpy()  #display predicted intermedicate region
 
         # 5) compute gradient and do SGD step for optimization
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        # 6) Record and Print loss, m (TRAINING)
-        # Print the loss, losses_ba, loss_rg, loss_fin, m, every args.print_frequency during training
+        # 6) Record loss, m; Visualize the segmentation results (TRAINING)
+        # Print the loss, losses_ba, loss_rg, loss_fin, metric_DSC_slice, every args.print_frequency during training
         if i % args.pf == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                   'Loss_BA {loss_ba.val:.4f} ({loss_ba.avg:.4f})\t'
                   'Loss_RG {loss_rg.val:.4f} ({loss_rg.avg:.4f})\t'
                   'Loss_Fin {loss_fin.val:.4f} ({loss_fin.avg:.4f})\t'
-                  'Metric_DSC_slice {avg_m.val:.3f} ({avg_m.avg:.3f})'.format(epoch, i, len(train_loader),
-                                                                              loss=losses,
-                                                                              loss_ba=losses_ba,
-                                                                              loss_rg=losses_rg,
-                                                                              loss_fin=losses_fin,
-                                                                              avg_m=avg_m))
+                  'Metric_DSC_slice {avg_mDSCs.val:.3f} ({avg_mDSCs.avg:.3f})'.format(epoch, i, len(train_loader),
+                                                                                      loss=losses,
+                                                                                      loss_ba=losses_ba,
+                                                                                      loss_rg=losses_rg,
+                                                                                      loss_fin=losses_fin,
+                                                                                      avg_mDSCs=avg_mDSCs))
 
-        # Plot the training loss, training m1, training m2 curves
+        # Plot the training loss, loss_ba, loss_rg, loss_fin, metric_DSC_slice
         data_logger.scalar_summary(tag='train/loss', value=loss, step=i + len(train_loader) * epoch)
         data_logger.scalar_summary(tag='train/loss_ba', value=loss_ba, step=i + len(train_loader) * epoch)
         data_logger.scalar_summary(tag='train/loss_rg', value=loss_rg, step=i + len(train_loader) * epoch)
         data_logger.scalar_summary(tag='train/loss_fin', value=loss_fin, step=i + len(train_loader) * epoch)
-        data_logger.scalar_summary(tag='train/metric_DSC_slice', value=m[0], step=i + len(train_loader) * epoch)
+        data_logger.scalar_summary(tag='train/metric_DSC_slice', value=mDSCs[0], step=i + len(train_loader) * epoch)
+
+        # Plot the image segmentation results
+        output_ba_disp = make_tf_disp(output_ba_np[0, 0, :, :], edge_var.data.cpu().numpy()[0, 0, :, :])
+        output_rg_disp = make_tf_disp(output_rg_np[0, 0, :, :], mask_var.data.cpu().numpy()[0, 0, :, :])
+        output_fin_disp = make_tf_disp(output_fin_np[0, 0, :, :], mask_var.data.cpu().numpy()[0, 0, :, :])
+        
+        tag_inf = '_epoch:' + str(epoch) + ' _iter:' + str(i)
+        data_logger.image_summary(tag='train/image_boundary' + tag_inf, images=output_ba_disp, step=i + len(train_loader) * epoch)
+        data_logger.image_summary(tag='train/image_INTregion' + tag_inf, images=output_rg_disp, step=i + len(train_loader) * epoch)
+        data_logger.image_summary(tag='train/image_FINregion' + tag_inf, images=output_fin_disp, step=i + len(train_loader) * epoch)
+
+        ipdb.set_trace()
 
 
 def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=None):
@@ -302,72 +319,6 @@ def save_checkpoint(state, is_best, model=None):
     torch.save(state, filename_ckpt)
     if is_best:
         shutil.copyfile(filename_ckpt, filename_best)
-
-
-class AverageMeter(object):
-    """Computes and stores the average and current value"""
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
-
-
-def metric_DSC_slice(output, target):
-    """ Calculation of DSC with respect to slice """
-    output_np = output.cpu().numpy()
-    target_np = target.cpu().numpy()
-
-    num_class = target.shape[1]
-    all_ap = []
-
-    for cid in range(num_class):
-        gt_cls = target_np[:, cid].astype('float32')
-        pred_cls = output_np[:, cid].astype('float32')
-
-        if all(v == 0 for v in gt_cls):
-            ap = np.float('nan')
-        else:
-            ap = average_precision_score(gt_cls, pred_cls, average=None)
-
-        all_ap.append(ap)
-
-    all_ap = np.array(all_ap)
-    mAP = all_ap[~np.isnan(all_ap)].mean()
-    return [mAP], [all_ap]
-
-
-def metric_DSC_volume(output, target):
-    """ Calculation of DSC with respect to  """
-    output_np = output.cpu().numpy()
-    target_np = target.cpu().numpy()
-
-    num_class = target.shape[1]
-    all_roc_auc = []
-    for cid in range(num_class):
-        gt_cls = target_np[:, cid].astype('float32')
-        pred_cls = output_np[:, cid].astype('float32')
-
-        if all(v == 0 for v in gt_cls):
-            roc_auc = float('nan')
-        else:
-            roc_auc = roc_auc_score(gt_cls, pred_cls, average='weighted')
-
-        all_roc_auc.append(roc_auc)
-
-    all_roc_auc = np.array(all_roc_auc)
-    mROC_AUC = all_roc_auc[~np.isnan(all_roc_auc)].mean()
-    return [mROC_AUC], [all_roc_auc]
-
 
 if __name__ == '__main__':
     main()

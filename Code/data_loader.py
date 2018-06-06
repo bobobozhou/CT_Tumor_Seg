@@ -24,6 +24,7 @@ class CTTumorDataset(Dataset):
         self.n_classes = 4
         self.class_name = ['Lung', 'Breast', 'Skin', 'Liver']
 
+        case_indexs = []
         image_names = []
         mask_names = []
         edge_names = []
@@ -32,22 +33,26 @@ class CTTumorDataset(Dataset):
             for line in f:
                 items = line.split()
 
-                image_name = items[0]
+                case_index = int(items[0])
+                case_indexs.append(case_index)
+
+                image_name = items[1]
                 image_name = os.path.join(image_data_dir, image_name)
                 image_names.append(image_name)
 
-                mask_name = items[1]
+                mask_name = items[2]
                 mask_name = os.path.join(mask_data_dir, mask_name)
                 mask_names.append(mask_name)
 
-                edge_name = items[2]
+                edge_name = items[3]
                 edge_name = os.path.join(edge_data_dir, edge_name)
                 edge_names.append(edge_name)
 
-                class_vec = items[3:]
+                class_vec = items[4:]
                 class_vec = [int(i) for i in class_vec]
                 class_vecs.append(class_vec)
 
+        self.case_indexs = case_indexs
         self.image_names = image_names
         self.mask_names = mask_names
         self.edge_names = edge_names
@@ -63,6 +68,10 @@ class CTTumorDataset(Dataset):
         Returns:
             image and label and class
         """
+
+        # case index loader
+        case_index = self.case_indexs[index]
+
         # image loader
         image_name = self.image_names[index]
         image = Image.open(image_name).convert('I')
@@ -91,7 +100,7 @@ class CTTumorDataset(Dataset):
             mask = torch.from_numpy(mask)
             edge = torch.from_numpy(edge)
 
-        return image, mask, edge, torch.FloatTensor(class_vec)
+        return case_index, image, mask, edge, torch.FloatTensor(class_vec)
 
     def __len__(self):
         return len(self.image_names)

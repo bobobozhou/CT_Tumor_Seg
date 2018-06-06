@@ -13,8 +13,8 @@ data_dir = '../../Data/public_data/Raw_DATA/3D';
 files = dir(data_dir);
 save_dir = '../../Data/public_data/';
 
-fileID_train = fopen(strcat(save_dir,'dir/','train_list.txt'),'w');
-fileID_test = fopen(strcat(save_dir,'dir/','test_list.txt'),'w');
+fileID_train = fopen(strcat(save_dir,'dir/','train_list.txt'),'wt');
+fileID_test = fopen(strcat(save_dir,'dir/','test_list.txt'),'wt');
 
 ind_case = 0;
 for i = 3:4:length(files)
@@ -78,24 +78,23 @@ for i = 3:4:length(files)
         edge_save = char(strcat(save_dir, 'edge/', edge_file_name));
         imwrite(edge_patch_tumor, edge_save);
         
-        if zz == z_mid
-            line = char(strcat(img_file_name, " ", ...
+        line = char(strcat(string(ind_case), " ", img_file_name, " ", ...
                 mask_file_name, " ", ...
-                edge_file_name, ' 0 0 0 0 \n'));
+                edge_file_name, " 0 0 0 0 \n"));
+            fprintf(fileID_test, line);
+        
+        if zz == z_mid
+            line = char(strcat(string(ind_case), " ", img_file_name, " ", ...
+                mask_file_name, " ", ...
+                edge_file_name, " 0 0 0 0 \n"));
             fprintf(fileID_train, line);
             
             figure(1),
             subplot(1,3,1); I=imread(img_save); imshow(I,[-1000 3000]);
             subplot(1,3,2); I=imread(mask_save); imshow(I,[0 1]);
             subplot(1,3,3); I=imread(edge_save); imshow(I,[0 1]);
-            suptitle(char(img_file_name));
+%             suptitle(char(img_file_name));
             drawnow;
-            
-        else
-            line = char(strcat(img_file_name, " ", ...
-                mask_file_name, " ", ...
-                edge_file_name, ' 0 0 0 0 \n'));
-            fprintf(fileID_test, line);
         end
 
     end
