@@ -26,7 +26,7 @@ import cv2
 from scipy.ndimage.interpolation import zoom
 from sklearn.metrics import roc_auc_score, average_precision_score
 from logger import Logger
-from data_loader import CTTumorDataset
+from data_loader import *
 from model import *
 from myloss import *
 
@@ -122,7 +122,7 @@ def main():
 
     # 1) training data
     train_dataset = CTTumorDataset(image_data_dir=args.image_data_dir,
-                                   label_data_dir=args.mask_data_dir,
+                                   mask_data_dir=args.mask_data_dir,
                                    edge_data_dir=args.edge_data_dir,
                                    list_file=args.train_list_dir,
                                    transform=
@@ -137,7 +137,7 @@ def main():
 
     # 2) validation data
     val_dataset = CTTumorDataset(image_data_dir=args.image_data_dir,
-                                 label_data_dir=args.mask_data_dir,
+                                 mask_data_dir=args.mask_data_dir,
                                  edge_data_dir=args.edge_data_dir,
                                  list_file=args.test_list_dir,
                                  transform=
@@ -148,7 +148,7 @@ def main():
                                       normalize,
                                       ]), 
                                  norm=normalize)
-    val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size,
+    val_loader = DataLoader(dataset=val_dataset, batch_size=100000000,
                             shuffle=False, num_workers=args.workers, pin_memory=True)
 
     ''' Create logger for recording the training (Tensorboard)'''
@@ -177,8 +177,11 @@ def main():
 
 
 def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, class_names=None):
+    losses_ba = AverageMeter()
+    losses_rg = AverageMeter()
+    losses_fin = AverageMeter()
     losses = AverageMeter()
-    avg_m1 = AverageMeter()
+    avg_m = AverageMeter()
 
     # switch to training mode and train
     model.train()
@@ -186,8 +189,8 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
         input_var = torch.autograd.Variable(input, requires_grad=True).cuda()
         mask_var = torch.autograd.Variable(mask).type(torch.FloatTensor).cuda()
         edge_var = torch.autograd.Variable(edge).type(torch.FloatTensor).cuda()
-        class_vec = class_vec.type(torch.FloatTensor).cuda()
-        class_vec_var = torch.autograd.Variable(class_vec)
+        # class_vec = class_vec.type(torch.FloatTensor).cuda()
+        # class_vec_var = torch.autograd.Variable(class_vec)
 
         # 1) output BOUNDARY, REGION, FINAL_REGION from models
         output_ba, output_rg, output_fin = model(input_var)
@@ -196,30 +199,43 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
         loss_ba = criterion(output_ba, edge_var)
         loss_rg = criterion(output_rg, mask_var)
         loss_fin = criterion(output_fin, mask_var)
-        loss = w_ba*loss_ba + w_rg*loss_rg + w_fin*loss_fin
+        loss = w_ba * loss_ba + w_rg * loss_rg + w_fin * loss_fin
 
-        # 3) record loss and metrics (mAp & ROC)
-        m1, all_ap = metric1(output_fin, mask)
+        # 3) record loss and metrics (DSC_slice)
+        losses_ba.update(loss_ba.data[0], input.size(0))
+        losses_rg.update(loss_rg.data[0], input.size(0))
+        losses_fin.update(loss_fin.data[0], input.size(0))
         losses.update(loss.data[0], input.size(0))
-        avg_m1.update(m1[0], input.size(0))
+
+        m, all_DCS_slice = metric_DSC_slice(output_fin, mask_var)
+        avg_m.update(m[0], input.size(0))
 
         # 5) compute gradient and do SGD step for optimization
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        # 6) Record and Print loss, m1, m2 (TRAINING)
-        # Print the loss, m1, m2 every args.print_frequency during training
+        # 6) Record and Print loss, m (TRAINING)
+        # Print the loss, losses_ba, loss_rg, loss_fin, m, every args.print_frequency during training
         if i % args.pf == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Metric1 {avg_m1.val:.3f} ({avg_m1.avg:.3f})'.format(epoch, i, len(train_loader),
-                                                                       loss=losses,
-                                                                       avg_m1=avg_m1))
+                  'Loss_BA {loss_ba.val:.4f} ({loss_ba.avg:.4f})\t'
+                  'Loss_RG {loss_rg.val:.4f} ({loss_rg.avg:.4f})\t'
+                  'Loss_Fin {loss_fin.val:.4f} ({loss_fin.avg:.4f})\t'
+                  'Metric_DSC_slice {avg_m.val:.3f} ({avg_m.avg:.3f})'.format(epoch, i, len(train_loader),
+                                                                              loss=losses,
+                                                                              loss_ba=losses_ba,
+                                                                              loss_rg=losses_rg,
+                                                                              loss_fin=losses_fin,
+                                                                              avg_m=avg_m))
 
         # Plot the training loss, training m1, training m2 curves
         data_logger.scalar_summary(tag='train/loss', value=loss, step=i + len(train_loader) * epoch)
-        data_logger.scalar_summary(tag='train/metric1:mAp', value=m1[0], step=i + len(train_loader) * epoch)
+        data_logger.scalar_summary(tag='train/loss_ba', value=loss_ba, step=i + len(train_loader) * epoch)
+        data_logger.scalar_summary(tag='train/loss_rg', value=loss_rg, step=i + len(train_loader) * epoch)
+        data_logger.scalar_summary(tag='train/loss_fin', value=loss_fin, step=i + len(train_loader) * epoch)
+        data_logger.scalar_summary(tag='train/metric_DSC_slice', value=m[0], step=i + len(train_loader) * epoch)
 
 
 def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=None):
@@ -234,7 +250,7 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
 
     # switch to evaluation mode and evaluate
     model.eval()
-    for i, (input, mask, edge, class_vec) in enumerate(val_loader):
+    for i, (case_ind, input, mask, edge, class_vec) in enumerate(val_loader):
         input_var = torch.autograd.Variable(input, requires_grad=True).cuda()
         target = target.type(torch.FloatTensor).cuda(async=True)
         target_var = torch.autograd.Variable(target)
@@ -255,8 +271,7 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
         loss = criterion(output_max, target_var)
 
     # 4) record loss and metrics (mAp & ROC)
-    m1, all_ap = metric1(pred, gt)
-    m2, all_aucroc = metric2(pred, gt)
+    m1, all_ap = metric_DSC_volume(pred, gt)
     avg_m1.update(m1[0], input.size(0))
 
     # Plot the validation m1, validation m2 curves
@@ -307,8 +322,8 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def metric1(output, target):
-    """ Calculation of mAp """
+def metric_DSC_slice(output, target):
+    """ Calculation of DSC with respect to slice """
     output_np = output.cpu().numpy()
     target_np = target.cpu().numpy()
 
@@ -331,8 +346,8 @@ def metric1(output, target):
     return [mAP], [all_ap]
 
 
-def metric2(output, target):
-    """ Calculation of min Ap """
+def metric_DSC_volume(output, target):
+    """ Calculation of DSC with respect to  """
     output_np = output.cpu().numpy()
     target_np = target.cpu().numpy()
 
@@ -352,26 +367,6 @@ def metric2(output, target):
     all_roc_auc = np.array(all_roc_auc)
     mROC_AUC = all_roc_auc[~np.isnan(all_roc_auc)].mean()
     return [mROC_AUC], [all_roc_auc]
-
-
-def convert_to_heatmap(img_gray, detail):
-    if not detail:
-        # 1
-        img_gray = 1 / (1 + np.exp(-img_gray))
-        im_color = cv2.applyColorMap((img_gray*255).astype(np.uint8), cv2.COLORMAP_JET)
-        return im_color[:, :, ::-1]
-
-    else:
-        # 2
-        img_gray = (img_gray - img_gray.min())/(img_gray.max() - img_gray.min()) * 255
-        r_heatmap = 128 - 128 * np.sin((2*np.pi)/275 * img_gray)
-        b_heatmap = 128 + 128 * np.sin((2*np.pi)/275 * img_gray)
-        g_heatmap = 128 - 128 * np.cos((2*np.pi)/275 * img_gray)
-
-        heatmaps_show = np.concatenate((r_heatmap[np.newaxis, :, :],
-                                        g_heatmap[np.newaxis, :, :],
-                                        b_heatmap[np.newaxis, :, :]), axis=0)
-        return heatmaps_show
 
 
 if __name__ == '__main__':

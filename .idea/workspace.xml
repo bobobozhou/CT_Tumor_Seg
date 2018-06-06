@@ -4,7 +4,6 @@
     <list default="true" id="9362b302-b9bf-432a-b6b4-a9528caa16c9" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Code/data_loader.py" afterPath="$PROJECT_DIR$/Code/data_loader.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Code/model.py" afterPath="$PROJECT_DIR$/Code/model.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Code/train.py" afterPath="$PROJECT_DIR$/Code/train.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -19,8 +18,8 @@
       <file leaf-file-name="data_loader.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Code/data_loader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="91" column="41" lean-forward="false" selection-start-line="91" selection-start-column="41" selection-end-line="91" selection-end-column="41" />
+            <state relative-caret-position="127">
+              <caret line="81" column="49" lean-forward="true" selection-start-line="81" selection-start-column="49" selection-end-line="81" selection-end-column="49" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -31,8 +30,8 @@
       <file leaf-file-name="model.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Code/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="684">
-              <caret line="38" column="43" lean-forward="true" selection-start-line="38" selection-start-column="43" selection-end-line="38" selection-end-column="43" />
+            <state relative-caret-position="-2969">
+              <caret line="40" column="43" lean-forward="false" selection-start-line="40" selection-start-column="43" selection-end-line="40" selection-end-column="43" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -43,8 +42,8 @@
       <file leaf-file-name="train.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Code/train.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="552">
-              <caret line="191" column="0" lean-forward="false" selection-start-line="191" selection-start-column="0" selection-end-line="191" selection-end-column="0" />
+            <state relative-caret-position="181">
+              <caret line="151" column="85" lean-forward="true" selection-start-line="151" selection-start-column="85" selection-end-line="151" selection-end-column="85" />
               <folding>
                 <element signature="e#132#147#0" expanded="true" />
               </folding>
@@ -60,13 +59,13 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/Code/train.py" />
         <option value="$PROJECT_DIR$/Code/model.py" />
         <option value="$PROJECT_DIR$/Code/data_loader.py" />
+        <option value="$PROJECT_DIR$/Code/train.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="65" />
     <option name="y" value="20" />
     <option name="width" value="1833" />
@@ -172,7 +171,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-4" width="1855" height="1084" extended-state="7" />
+    <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20232172" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -200,14 +199,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Code/model.py</url>
-          <line>157</line>
-          <option name="timeStamp" value="13" />
-        </line-breakpoint>
-      </breakpoints>
-      <option name="time" value="15" />
+      <option name="time" value="16" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -244,20 +236,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Code/data_loader.py">
+    <entry file="file://$PROJECT_DIR$/Code/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="91" column="41" lean-forward="false" selection-start-line="91" selection-start-column="41" selection-end-line="91" selection-end-column="41" />
+        <state relative-caret-position="-2969">
+          <caret line="40" column="43" lean-forward="false" selection-start-line="40" selection-start-column="43" selection-end-line="40" selection-end-column="43" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Code/model.py">
+    <entry file="file://$PROJECT_DIR$/Code/data_loader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="684">
-          <caret line="38" column="43" lean-forward="true" selection-start-line="38" selection-start-column="43" selection-end-line="38" selection-end-column="43" />
+        <state relative-caret-position="127">
+          <caret line="81" column="49" lean-forward="true" selection-start-line="81" selection-start-column="49" selection-end-line="81" selection-end-column="49" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
@@ -266,8 +258,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Code/train.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="552">
-          <caret line="191" column="0" lean-forward="false" selection-start-line="191" selection-start-column="0" selection-end-line="191" selection-end-column="0" />
+        <state relative-caret-position="181">
+          <caret line="151" column="85" lean-forward="true" selection-start-line="151" selection-start-column="85" selection-end-line="151" selection-end-column="85" />
           <folding>
             <element signature="e#132#147#0" expanded="true" />
           </folding>

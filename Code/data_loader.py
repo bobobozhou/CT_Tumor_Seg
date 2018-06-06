@@ -10,12 +10,12 @@ import ipdb
 class CTTumorDataset(Dataset):
     """"CT Tumor 2D Data loader"""
 
-    def __init__(self, image_data_dir, label_data_dir, edge_data_dir, list_file, transform=None, norm=None):
+    def __init__(self, image_data_dir, mask_data_dir, edge_data_dir, list_file, transform=None, norm=None):
 
         """
         Args:
             image_data_dir (string): Directory with all the images.
-            label_data_dir (string): Directory with all the binary label/annotation.
+            mask_data_dir (string): Directory with all the binary label/annotation.
             edge_data_dir (string): Directory with all the boundary/edge
             list_file: Path to the txt file with: image file name + label/annotation file name + class label.
             transform (callable, optional): Optional transform to be applied on a sample.
@@ -37,7 +37,7 @@ class CTTumorDataset(Dataset):
                 image_names.append(image_name)
 
                 mask_name = items[1]
-                mask_name = os.path.join(label_data_dir, mask_name)
+                mask_name = os.path.join(mask_data_dir, mask_name)
                 mask_names.append(mask_name)
 
                 edge_name = items[2]
