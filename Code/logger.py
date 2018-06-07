@@ -1,10 +1,7 @@
 """
 File: logger.py
-Modified by: Senthil Purushwalkam
+Modified by: Bo Zhou
 Code referenced from https://gist.github.com/gyglim/1f8dfb1b5c82627ae3efcfbbadb9f514
-Email: spurushw<at>andrew<dot>cmu<dot>edu
-Github: https://github.com/senthilps8
-Description: 
 """
 
 import tensorflow as tf

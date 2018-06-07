@@ -37,21 +37,23 @@ def metric_DSC_slice(output, target):
     return [mDSC], [all_DSC_slice]
 
 
-def metric_DSC_volume(output, target, ind):
+def metric_DSC_volume(output, target, ind_all):
     """ Calculation of DSC with respect to volume using the slice index (correspond to case) """
-    num_slice = target.shape[0]
-    all_DSC_slice = []
+    num_volume = ind_all.max()
+    all_DSC_volume = []
 
-    for i in range(num_slice):
-        gt = target[i, 0, :, :].astype('float32')
-        pred = output[i, 0, :, :].astype('float32')
+    for i in range(ind_all.min(), ind_all.max() + 1):
+        vol_gt = target[np.where(ind_all == i)[0], :, :]
+        
+        vol_output_prob = output[np.where(ind_all == i)[0], :, :]
+        vol_output = prob_to_segment(vol_output_prob)
 
-        dice = DICE(gt, pred, empty_score=1.0)
-        all_DSC_slice.append(dice)
+        dice = DICE(vol_output, vol_gt, empty_score=1.0)
+        all_DSC_volume.append(dice)
 
-    all_DSC_slice = np.array(all_DSC_slice)
-    mDSC = all_DSC_slice.mean()
-    return [mDSC], [all_DSC_slice]
+    all_DSC_volume = np.array(all_DSC_volume)
+    mDSC = all_DSC_volume.mean()
+    return [mDSC], [all_DSC_volume]
 
 
 def DICE(im_pred, im_target, empty_score=1.0):
@@ -74,9 +76,7 @@ def DICE(im_pred, im_target, empty_score=1.0):
     """
 
     # threshold the predicted segmentation image (a probablity map)
-    thresh = threshold_otsu(im_pred)
-    im_pred = im_pred > thresh
-    im_pred = np.asarray(im_pred).astype(np.bool)
+    im_pred = prob_to_segment(im_pred)
 
     # the targert segmentation image
     im_target = np.asarray(im_target).astype(np.bool)
@@ -95,7 +95,7 @@ def DICE(im_pred, im_target, empty_score=1.0):
     return 2. * intersection.sum() / im_sum
 
 
-def make_tf_disp(output, target):
+def make_tf_disp_slice(output, target):
     """
     make the numpy matrix for tensorboard to display
     Parameters
@@ -120,3 +120,70 @@ def make_tf_disp(output, target):
 
     return disp_mat
 
+
+def make_tf_disp_volume(output, target, ind_all):
+    """
+    make the Montage for tensorboard to display 3D volume
+    Parameters
+    ----------
+    output: array-like
+        Any array of arbitrary size from the model prediction with case-index.
+    targte:  
+        Any array of arbitrary size (ground truth segmentation) with case-index
+        * Need to be same size as output
+
+    Return
+    ----------
+    dictionary for inputting the tf logger function, displaying montage
+    """
+
+    if output.shape != target.shape:
+        raise ValueError("Shape mismatch: Prectiction and Ground-Truth must have the same shape!")
+
+    dict = {}
+    for i in range(ind_all.min(), ind_all.max() + 1):
+        vol_gt = target[np.where(ind_all == i)[0], :, :]
+        vol_output_prob = output[np.where(ind_all == i)[0], :, :]
+        vol_output = prob_to_segment(vol_output_prob)
+
+        montage_gt = vol_to_montage(vol_gt)
+        montage_output = vol_to_montage(vol_output)
+
+        montage_gt = np.repeat(montage_gt[np.newaxis, np.newaxis, :, :], 3, axis=1)
+        montage_output = np.repeat(montage_output[np.newaxis, np.newaxis, :, :], 3, axis=1)
+        disp_mat = np.concatenate((montage_output, montage_gt), axis=0)
+
+        dict[i] = disp_mat
+
+    return dict
+
+
+def prob_to_segment(prob):
+    """
+    threshold the predicted segmentation image (a probablity image/volume)
+    using 0.5 hard thresholding
+    """
+    # thresh = threshold_otsu(prob)
+    thresh = 0.5
+    seg = prob > thresh
+    seg = np.asarray(seg).astype(np.bool)
+
+    return seg
+
+def vol_to_montage(vol):
+    n_slice, w_slice, h_slice = np.shape(vol)
+    nn = int(np.ceil(np.sqrt(n_slice)))
+    mm = nn
+    M = np.zeros((mm * h_slice, nn * w_slice)) 
+
+    image_id = 0
+    for j in range(mm):
+        for k in range(nn):
+            if image_id >= n_slice: 
+                break
+            sliceM = j * w_slice 
+            sliceN = k * h_slice
+            M[sliceN:sliceN + w_slice, sliceM:sliceM + h_slice] = vol[image_id, :, :]
+            image_id += 1
+
+    return M
