@@ -37,27 +37,21 @@ def metric_DSC_slice(output, target):
     return [mDSC], [all_DSC_slice]
 
 
-def metric_DSC_volume(output, target):
-    """ Calculation of DSC with respect to  """
-    output_np = output.cpu().numpy()
-    target_np = target.cpu().numpy()
+def metric_DSC_volume(output, target, ind):
+    """ Calculation of DSC with respect to volume using the slice index (correspond to case) """
+    num_slice = target.shape[0]
+    all_DSC_slice = []
 
-    num_class = target.shape[1]
-    all_roc_auc = []
-    for cid in range(num_class):
-        gt_cls = target_np[:, cid].astype('float32')
-        pred_cls = output_np[:, cid].astype('float32')
+    for i in range(num_slice):
+        gt = target[i, 0, :, :].astype('float32')
+        pred = output[i, 0, :, :].astype('float32')
 
-        if all(v == 0 for v in gt_cls):
-            roc_auc = float('nan')
-        else:
-            roc_auc = roc_auc_score(gt_cls, pred_cls, average='weighted')
+        dice = DICE(gt, pred, empty_score=1.0)
+        all_DSC_slice.append(dice)
 
-        all_roc_auc.append(roc_auc)
-
-    all_roc_auc = np.array(all_roc_auc)
-    mROC_AUC = all_roc_auc[~np.isnan(all_roc_auc)].mean()
-    return [mROC_AUC], [all_roc_auc]
+    all_DSC_slice = np.array(all_DSC_slice)
+    mDSC = all_DSC_slice.mean()
+    return [mDSC], [all_DSC_slice]
 
 
 def DICE(im_pred, im_target, empty_score=1.0):
