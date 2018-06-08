@@ -166,8 +166,8 @@ def prob_to_segment(prob):
     threshold the predicted segmentation image (a probablity image/volume)
     using 0.5 hard thresholding
     """
-    # thresh = threshold_otsu(prob)
-    thresh = 0.5
+    thresh = threshold_otsu(prob)
+    # thresh = 0.5
     seg = prob > thresh
     seg = np.asarray(seg).astype(np.bool)
 
