@@ -18,6 +18,7 @@ import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torchvision
+import transforms_3pair.transforms_3pair as transforms_3pair    # customizd transform for applying same random for 3 images (image, mask, edge)
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
@@ -51,7 +52,7 @@ parser.add_argument('--wd', default=1e-4, type=float, metavar='W',
                     help='weight decay (default: 1e-4)')
 parser.add_argument('-pf', default=1, type=int, metavar='N',
                     help='training print frequency (default: 10)')
-parser.add_argument('--ef', default=200, type=int, metavar='N',
+parser.add_argument('--ef', default=50, type=int, metavar='N',
                     help='evaluate print frequency (default: 2)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
@@ -73,8 +74,6 @@ parser.add_argument('--test_list_dir', default='../Data/public_data/dir/test_lis
 
 n_classes = 4
 class_names = ['Lung', 'Breast', 'Skin', 'Liver']
-para_mean = np.array([0.485, 0.456, 0.406])
-para_std = np.array([0.229, 0.224, 0.225])
 w_ba = 1; w_rg = 10; w_fin = 10
 
 
@@ -122,11 +121,11 @@ def main():
                                    edge_data_dir=args.edge_data_dir,
                                    list_file=args.train_list_dir,
                                    transform=
-                                   transforms.Compose(
-                                       [transforms.Resize(128),
-                                        transforms.RandomRotation(180),
-                                        transforms.RandomCrop(112),
-                                        transforms.ToTensor(),
+                                   transforms_3pair.Compose(
+                                       [transforms_3pair.Resize(128),
+                                        transforms_3pair.RandomRotation(180),
+                                        transforms_3pair.RandomCrop(112),
+                                        transforms_3pair.ToTensor(),
                                         ]), 
                                    norm=
                                    transforms.Compose(
@@ -142,10 +141,10 @@ def main():
                                  edge_data_dir=args.edge_data_dir,
                                  list_file=args.test_list_dir,
                                  transform=
-                                 transforms.Compose(
-                                     [transforms.Resize(112),
-                                      transforms.RandomCrop(112),
-                                      transforms.ToTensor(),
+                                 transforms_3pair.Compose(
+                                     [transforms_3pair.Resize(112),
+                                      transforms_3pair.RandomCrop(112),
+                                      transforms_3pair.ToTensor(),
                                       ]), 
                                  norm=
                                  transforms.Compose(
@@ -165,7 +164,7 @@ def main():
 
         # train for one epoch
         train(train_loader, model, criterion, optimizer, epoch, data_logger=data_logger, class_names=class_names)
-
+        ipdb.set_trace()
         # evaluate on validation set
         if epoch % args.ef == 0 or epoch == args.epochs:
             m = validate(val_loader, model, criterion, epoch, data_logger=data_logger, class_names=class_names)

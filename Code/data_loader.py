@@ -1,7 +1,8 @@
 import torch
 import numpy as np
 from torch.utils.data import Dataset
-from torchvision.transforms import transforms
+import transforms_3pair.transforms_3pair as transforms_3pair    # customizd transform for applying same random for 3 images (image, mask, edge)
+import torchvision.transforms as transforms
 from PIL import Image
 import os
 import ipdb
@@ -88,9 +89,11 @@ class CTTumorDataset(Dataset):
         class_vec = torch.FloatTensor(class_vec)
 
         if self.transform is not None:
-            image = self.transform(image).numpy()
-            mask = self.transform(mask).numpy()
-            edge = self.transform(edge).numpy()
+            image, mask, edge = self.transform(image, mask, edge)
+            
+            image = image.numpy()
+            mask = mask.numpy()
+            edge = edge.numpy()
 
             image = np.repeat(image, 3, axis=0)
             mask = np.concatenate((mask, 1-mask), axis=0)
