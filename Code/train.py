@@ -41,7 +41,7 @@ parser.add_argument('--epochs', default=600, type=int, metavar='N',
                     help='number of epochs for training network')
 parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('--batch_size', default=32, type=int, metavar='N',
+parser.add_argument('--batch_size', default=16, type=int, metavar='N',
                     help='mini-batch size for training (default: 64)')
 parser.add_argument('--lr', default=0.0001, type=float, metavar='LR',
                     help='initial learning rate')
@@ -75,7 +75,7 @@ n_classes = 4
 class_names = ['Lung', 'Breast', 'Skin', 'Liver']
 para_mean = np.array([0.485, 0.456, 0.406])
 para_std = np.array([0.229, 0.224, 0.225])
-w_ba = 1; w_rg = 1; w_fin = 100
+w_ba = 1; w_rg = 10; w_fin = 10
 
 
 def main():
@@ -116,9 +116,6 @@ def main():
     1) Training Data
     2) Validation Data
     '''
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
-
     # 1) training data
     train_dataset = CTTumorDataset(image_data_dir=args.image_data_dir,
                                    mask_data_dir=args.mask_data_dir,
@@ -127,10 +124,15 @@ def main():
                                    transform=
                                    transforms.Compose(
                                        [transforms.Resize(128),
+                                        transforms.RandomRotation(180),
                                         transforms.RandomCrop(112),
                                         transforms.ToTensor(),
                                         ]), 
-                                   norm=normalize)
+                                   norm=
+                                   transforms.Compose(
+                                       [transforms.Normalize(mean=[0, 0, 0], std=[2000, 2000, 2000]),
+                                        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                                        ]))
     train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size,
                               shuffle=True, num_workers=args.workers, pin_memory=True)
 
@@ -145,7 +147,11 @@ def main():
                                       transforms.RandomCrop(112),
                                       transforms.ToTensor(),
                                       ]), 
-                                 norm=normalize)
+                                 norm=
+                                 transforms.Compose(
+                                     [transforms.Normalize(mean=[0, 0, 0], std=[2000, 2000, 2000]),
+                                      transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                                      ]))
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size,
                             shuffle=False, num_workers=args.workers, pin_memory=True)
 
@@ -243,11 +249,13 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
         data_logger.scalar_summary(tag='train/metric_DSC_slice', value=mDSCs[0], step=i + len(train_loader) * epoch)
 
         # Plot the image segmentation results
+        image_disp = np.repeat(input_var.data.cpu().numpy()[0, 0, :, :][np.newaxis, np.newaxis, :, :], 3, axis=1)
         output_ba_disp = make_tf_disp_slice(output_ba_np[0, 0, :, :], edge_var.data.cpu().numpy()[0, 0, :, :])
         output_rg_disp = make_tf_disp_slice(output_rg_np[0, 0, :, :], mask_var.data.cpu().numpy()[0, 0, :, :])
         output_fin_disp = make_tf_disp_slice(output_fin_np[0, 0, :, :], mask_var.data.cpu().numpy()[0, 0, :, :])
         
         tag_inf = '_epoch:' + str(epoch) + ' _iter:' + str(i)
+        data_logger.image_summary(tag='train/' + tag_inf + '-0image', images=image_disp, step=i + len(train_loader) * epoch)
         data_logger.image_summary(tag='train/' + tag_inf + '-1image_boundary', images=output_ba_disp, step=i + len(train_loader) * epoch)
         data_logger.image_summary(tag='train/' + tag_inf + '-2image_INTregion', images=output_rg_disp, step=i + len(train_loader) * epoch)
         data_logger.image_summary(tag='train/' + tag_inf + '-3image_FINregion', images=output_fin_disp, step=i + len(train_loader) * epoch)
@@ -284,10 +292,12 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
         # 4) store all the output, case_ind, gt on validation
         if i == 0:
             case_ind_all = case_ind.cpu().numpy()
+            input_all = input_var.data.cpu().numpy()[:,0,:,:]
             output_all = output_fin.data.cpu().numpy()[:,0,:,:]
             mask_all = mask_var.data.cpu().numpy()[:,0,:,:]
         else:
             case_ind_all = np.concatenate((case_ind_all, case_ind.cpu().numpy()), axis=0)
+            input_all = np.concatenate((input_all, input_var.data.cpu().numpy()[:,0,:,:]), axis=0)
             output_all = np.concatenate((output_all, output_fin.data.cpu().numpy()[:,0,:,:]), axis=0)
             mask_all = np.concatenate((mask_all, mask_var.data.cpu().numpy()[:,0,:,:]), axis=0)
 
@@ -315,7 +325,7 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
     data_logger.scalar_summary(tag='validate/metric_DSC_volume', value=mDSCv[0], step=epoch)
 
     # Plot the volume segmentation results - Montage
-    dict_disp = make_tf_disp_volume(output_all, mask_all, case_ind_all)
+    dict_disp = make_tf_disp_volume(input_all, output_all, mask_all, case_ind_all)
     
     for _, ind in enumerate(dict_disp):
         data_logger.image_summary(tag='validate/case:' + str(ind), images=dict_disp[ind], step=epoch)

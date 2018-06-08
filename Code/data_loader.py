@@ -68,7 +68,6 @@ class CTTumorDataset(Dataset):
         Returns:
             image and label and class
         """
-
         # case index loader
         case_index = self.case_indexs[index]
 
@@ -86,6 +85,7 @@ class CTTumorDataset(Dataset):
 
         # class vector loader
         class_vec = self.class_vecs[index]
+        class_vec = torch.FloatTensor(class_vec)
 
         if self.transform is not None:
             image = self.transform(image).numpy()
@@ -100,7 +100,7 @@ class CTTumorDataset(Dataset):
             mask = torch.from_numpy(mask)
             edge = torch.from_numpy(edge)
 
-        return case_index, image, mask, edge, torch.FloatTensor(class_vec)
+        return case_index, image, mask, edge, class_vec
 
     def __len__(self):
         return len(self.image_names)

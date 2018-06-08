@@ -121,7 +121,7 @@ def make_tf_disp_slice(output, target):
     return disp_mat
 
 
-def make_tf_disp_volume(output, target, ind_all):
+def make_tf_disp_volume(input, output, target, ind_all):
     """
     make the Montage for tensorboard to display 3D volume
     Parameters
@@ -138,21 +138,24 @@ def make_tf_disp_volume(output, target, ind_all):
     """
 
     if output.shape != target.shape:
-        raise ValueError("Shape mismatch: Prectiction and Ground-Truth must have the same shape!")
+        raise ValueError("Shape mismatch: Image & Prediction & Ground-Truth must have the same shape!")
 
     dict = {}
     for i in range(ind_all.min(), ind_all.max() + 1):
+        vol_input = input[np.where(ind_all == i)[0], :, :]
         vol_gt = target[np.where(ind_all == i)[0], :, :]
         vol_output_prob = output[np.where(ind_all == i)[0], :, :]
         vol_output = prob_to_segment(vol_output_prob)
 
+        montage_input = vol_to_montage(vol_input)
         montage_gt = vol_to_montage(vol_gt)
         montage_output = vol_to_montage(vol_output)
 
+        montage_input = np.repeat(montage_input[np.newaxis, np.newaxis, :, :], 3, axis=1)
         montage_gt = np.repeat(montage_gt[np.newaxis, np.newaxis, :, :], 3, axis=1)
         montage_output = np.repeat(montage_output[np.newaxis, np.newaxis, :, :], 3, axis=1)
-        disp_mat = np.concatenate((montage_output, montage_gt), axis=0)
 
+        disp_mat = np.concatenate((montage_input, montage_output, montage_gt), axis=0)
         dict[i] = disp_mat
 
     return dict
@@ -169,6 +172,7 @@ def prob_to_segment(prob):
     seg = np.asarray(seg).astype(np.bool)
 
     return seg
+
 
 def vol_to_montage(vol):
     n_slice, w_slice, h_slice = np.shape(vol)
