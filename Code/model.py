@@ -132,7 +132,7 @@ class SiBANET(nn.Module):
         out2_cat_ba = self.c2_ba(out2_cat)
         out3_cat_ba = self.c3_ba(out3_cat)
         out_cat_ba = torch.cat((out1_cat_ba, out2_cat_ba, out3_cat_ba), 1)
-        out_ba = F.sigmoid(self.c4_ba(out_cat_ba))     # used as input for final predict
+        out_ba = F.softmax(self.c4_ba(out_cat_ba), dim=1)     # used as input for final predict
 
         # Bottom-Stream to Region output
         '''Regions branch: upsample & conv to concatenate horizontally'''
@@ -140,11 +140,11 @@ class SiBANET(nn.Module):
         out2_cat_rg = self.c2_rg(out2_cat)
         out3_cat_rg = self.c3_rg(out3_cat)
         out_cat_rg = torch.cat((out1_cat_rg, out2_cat_rg, out3_cat_rg), 1)
-        out_rg = F.sigmoid(self.c4_rg(out_cat_rg))     # used as input for final predict
+        out_rg = F.softmax(self.c4_rg(out_cat_rg), dim=1)     # used as input for final predict
 
         # Combination Stream to final Region output
         out_cat_fin = torch.cat((out_ba, out_rg), 1)
-        out_fin = F.sigmoid(self.c_fin(out_cat_fin))
+        out_fin = F.softmax(self.c_fin(out_cat_fin), dim=1)
 
         return out_ba, out_rg, out_fin
 

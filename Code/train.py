@@ -30,6 +30,7 @@ from logger import Logger
 from data_loader import *
 from model import *
 from utilizes import *
+from myloss import *
 
 
 '''Set up Training Parameters'''
@@ -42,7 +43,7 @@ parser.add_argument('--epochs', default=1000000, type=int, metavar='N',
                     help='number of epochs for training network')
 parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('--batch_size', default=38, type=int, metavar='N',
+parser.add_argument('--batch_size', default=8, type=int, metavar='N',
                     help='mini-batch size for training (default: 64)')
 parser.add_argument('--lr', default=0.0001, type=float, metavar='LR',
                     help='initial learning rate')
@@ -79,6 +80,7 @@ class_names = ['Lung', 'Breast', 'Skin', 'Liver']
 w_ba = 1; w_rg = 10; w_fin = 10
 best_m = 0
 
+
 def main():
     global args, best_m
     args = parser.parse_args()
@@ -93,8 +95,7 @@ def main():
 
     ''' Define loss function (criterion) and optimizer '''
     # criterion = SoftDiceLoss().cuda()
-    criterion_ba = nn.BCELoss(weight=torch.Tensor([100, 1, 1])).cuda()
-    criterion_rg = nn.BCELoss(weight=torch.Tensor([1, 1, 1])).cuda()
+    criterion = nn.BCELoss().cuda()
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=args.lr,
                                 momentum=args.momentum,
@@ -165,11 +166,11 @@ def main():
         adjust_learning_rate(optimizer, epoch)
 
         # train for one epoch
-        train(train_loader, model, criterion_ba, criterion_rg, optimizer, epoch, data_logger=data_logger, class_names=class_names)
+        train(train_loader, model, criterion, optimizer, epoch, data_logger=data_logger, class_names=class_names)
         
         # evaluate on validation set
         if epoch % args.ef == 0 or epoch == args.epochs:
-            m = validate(val_loader, model, criterion_ba, criterion_rg, epoch, data_logger=data_logger, class_names=class_names)
+            m = validate(val_loader, model, criterion, epoch, data_logger=data_logger, class_names=class_names)
 
             # remember best metric and save checkpoint
             is_best = m > best_m
@@ -183,7 +184,7 @@ def main():
             }, is_best, model=args.model_name)
 
 
-def train(train_loader, model, criterion_ba, criterion_rg, optimizer, epoch, data_logger=None, class_names=None):
+def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, class_names=None):
     losses_ba = AverageMeter()
     losses_rg = AverageMeter()
     losses_fin = AverageMeter()
@@ -203,9 +204,12 @@ def train(train_loader, model, criterion_ba, criterion_rg, optimizer, epoch, dat
         output_ba, output_rg, output_fin = model(input_var)
 
         # 2) compute the current loss: loss_boundary, loss_region, loss_final_region
-        loss_ba = criterion_ba(output_ba, edge_var)
-        loss_rg = criterion_rg(output_rg, mask_var)
-        loss_fin = criterion_rg(output_fin, mask_var)
+        # loss_ba = criterion(output_ba, edge_var)
+        # loss_rg = criterion(output_rg, mask_var)
+        # loss_fin = criterion(output_fin, mask_var)
+        loss_ba = weighted_BCE_loss(output_ba, edge_var, weights=[1, 1])
+        loss_rg = weighted_BCE_loss(output_rg, mask_var, weights=[1, 1])
+        loss_fin = weighted_BCE_loss(output_fin, mask_var, weights=[1, 1])
         loss = w_ba * loss_ba + w_rg * loss_rg + w_fin * loss_fin
 
         # 3) record loss and metrics (DSC_slice)
@@ -263,7 +267,7 @@ def train(train_loader, model, criterion_ba, criterion_rg, optimizer, epoch, dat
             data_logger.image_summary(tag='train/' + tag_inf + '-3image_FINregion', images=output_fin_disp, step=i + len(train_loader) * epoch)
 
 
-def validate(val_loader, model, criterion_ba, criterion_rg, epoch, data_logger=None, class_names=None):
+def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=None):
     losses_ba = AverageMeter()
     losses_rg = AverageMeter()
     losses_fin = AverageMeter()
@@ -280,9 +284,9 @@ def validate(val_loader, model, criterion_ba, criterion_rg, epoch, data_logger=N
         output_ba, output_rg, output_fin = model(input_var)
 
         # 2) compute the current loss on validation: loss_boundary, loss_region, loss_final_region
-        loss_ba = criterion_ba(output_ba, edge_var)
-        loss_rg = criterion_rg(output_rg, mask_var)
-        loss_fin = criterion_rg(output_fin, mask_var)
+        loss_ba = criterion(output_ba, edge_var)
+        loss_rg = criterion(output_rg, mask_var)
+        loss_fin = criterion(output_fin, mask_var)
         loss = w_ba * loss_ba + w_rg * loss_rg + w_fin * loss_fin
 
         # 3) record loss and metrics (DSC_volume)
