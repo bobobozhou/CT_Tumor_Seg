@@ -26,8 +26,8 @@ def metric_DSC_slice(output, target):
     all_DSC_slice = []
 
     for i in range(num_slice):
-        gt = target[i, 0, :, :].astype('float32')
-        pred = output[i, 0, :, :].astype('float32')
+        gt = target[i, :, :].astype('float32')
+        pred = output[i, :, :].astype('float32')
 
         dice = DICE(gt, pred, empty_score=1.0)
         all_DSC_slice.append(dice)
