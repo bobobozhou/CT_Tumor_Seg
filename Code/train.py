@@ -77,7 +77,7 @@ parser.add_argument('--test_list_dir', default='../Data/public_data/dir/test_lis
 
 n_classes = 4
 class_names = ['Lung', 'Breast', 'Skin', 'Liver']
-w_ba = 1; w_rg = 10; w_fin = 10
+w_ba = 1; w_rg = 1; w_fin = 1
 best_m = 0
 
 
@@ -94,8 +94,8 @@ def main():
     cudnn.benchmark = True
 
     ''' Define loss function (criterion) and optimizer '''
-    # criterion = SoftDiceLoss().cuda()
-    criterion = nn.BCELoss().cuda()
+    criterion_ba = nn.CrossEntropyLoss(weight=torch.Tensor([1, 1])).cuda()
+    criterion_rg = nn.CrossEntropyLoss(weight=torch.Tensor([1, 1])).cuda()
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=args.lr,
                                 momentum=args.momentum,
@@ -127,7 +127,7 @@ def main():
                                    transform=
                                    transforms_3pair.Compose(
                                        [transforms_3pair.Resize(120),
-                                        transforms_3pair.RandomRotation(180),
+                                        transforms_3pair.RandomRotation(20),
                                         transforms_3pair.RandomCrop(112),
                                         transforms_3pair.ToTensor(),
                                         ]), 
@@ -166,11 +166,11 @@ def main():
         adjust_learning_rate(optimizer, epoch)
 
         # train for one epoch
-        train(train_loader, model, criterion, optimizer, epoch, data_logger=data_logger, class_names=class_names)
+        train(train_loader, model, criterion_ba, criterion_rg, optimizer, epoch, data_logger=data_logger, class_names=class_names)
         
         # evaluate on validation set
         if epoch % args.ef == 0 or epoch == args.epochs:
-            m = validate(val_loader, model, criterion, epoch, data_logger=data_logger, class_names=class_names)
+            m = validate(val_loader, model, criterion_ba, criterion_rg, epoch, data_logger=data_logger, class_names=class_names)
 
             # remember best metric and save checkpoint
             is_best = m > best_m
@@ -184,7 +184,7 @@ def main():
             }, is_best, model=args.model_name)
 
 
-def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, class_names=None):
+def train(train_loader, model, criterion_ba, criterion_rg, optimizer, epoch, data_logger=None, class_names=None):
     losses_ba = AverageMeter()
     losses_rg = AverageMeter()
     losses_fin = AverageMeter()
@@ -195,8 +195,8 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
     model.train()
     for i, (case_ind, input, mask, edge, class_vec) in enumerate(train_loader):
         input_var = torch.autograd.Variable(input, requires_grad=True).cuda()
-        mask_var = torch.autograd.Variable(mask).type(torch.FloatTensor).cuda()
-        edge_var = torch.autograd.Variable(edge).type(torch.FloatTensor).cuda()
+        mask_var = torch.autograd.Variable(mask).type(torch.LongTensor).cuda()
+        edge_var = torch.autograd.Variable(edge).type(torch.LongTensor).cuda()
         # class_vec = class_vec.type(torch.FloatTensor).cuda()
         # class_vec_var = torch.autograd.Variable(class_vec)
 
@@ -204,12 +204,9 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
         output_ba, output_rg, output_fin = model(input_var)
 
         # 2) compute the current loss: loss_boundary, loss_region, loss_final_region
-        # loss_ba = criterion(output_ba, edge_var)
-        # loss_rg = criterion(output_rg, mask_var)
-        # loss_fin = criterion(output_fin, mask_var)
-        loss_ba = weighted_BCE_loss(output_ba, edge_var, weights=[1, 1])
-        loss_rg = weighted_BCE_loss(output_rg, mask_var, weights=[1, 1])
-        loss_fin = weighted_BCE_loss(output_fin, mask_var, weights=[1, 1])
+        loss_ba = criterion_ba(output_ba, edge_var)
+        loss_rg = criterion_rg(output_rg, mask_var)
+        loss_fin = criterion_rg(output_fin, mask_var)
         loss = w_ba * loss_ba + w_rg * loss_rg + w_fin * loss_fin
 
         # 3) record loss and metrics (DSC_slice)
@@ -219,7 +216,7 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
         losses.update(loss.data[0], input.size(0))
 
         output_fin_np = output_fin.data.cpu().numpy()   # display predicted & calculate final region
-        mask_np = mask_var.data.cpu().numpy()
+        mask_np = mask_var.data.cpu().numpy()[:, np.newaxis, :, :]
         mDSCs, all_DCS_slice = metric_DSC_slice(output_fin_np, mask_np)
         avg_mDSCs.update(mDSCs[0], input.size(0))
 
@@ -256,9 +253,9 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
         # Plot the image segmentation results
         if epoch % args.df == 0:
             image_disp = np.repeat(input_var.data.cpu().numpy()[0, 0, :, :][np.newaxis, np.newaxis, :, :], 3, axis=1)
-            output_ba_disp = make_tf_disp_slice(output_ba_np[0, 0, :, :], edge_var.data.cpu().numpy()[0, 0, :, :])
-            output_rg_disp = make_tf_disp_slice(output_rg_np[0, 0, :, :], mask_var.data.cpu().numpy()[0, 0, :, :])
-            output_fin_disp = make_tf_disp_slice(output_fin_np[0, 0, :, :], mask_var.data.cpu().numpy()[0, 0, :, :])
+            output_ba_disp = make_tf_disp_slice(output_ba_np[0, 1, :, :], edge_var.data.cpu().numpy()[0, :, :])
+            output_rg_disp = make_tf_disp_slice(output_rg_np[0, 1, :, :], mask_var.data.cpu().numpy()[0, :, :])
+            output_fin_disp = make_tf_disp_slice(output_fin_np[0, 1, :, :], mask_var.data.cpu().numpy()[0, :, :])
             
             tag_inf = '_epoch:' + str(epoch) + ' _iter:' + str(i)
             data_logger.image_summary(tag='train/' + tag_inf + '-0image', images=image_disp, step=i + len(train_loader) * epoch)
@@ -267,7 +264,7 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
             data_logger.image_summary(tag='train/' + tag_inf + '-3image_FINregion', images=output_fin_disp, step=i + len(train_loader) * epoch)
 
 
-def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=None):
+def validate(val_loader, model, criterion_ba, criterion_rg, epoch, data_logger=None, class_names=None):
     losses_ba = AverageMeter()
     losses_rg = AverageMeter()
     losses_fin = AverageMeter()
@@ -277,16 +274,16 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
     model.eval()
     for i, (case_ind, input, mask, edge, class_vec) in enumerate(val_loader):
         input_var = torch.autograd.Variable(input, requires_grad=False).cuda()
-        mask_var = torch.autograd.Variable(mask).type(torch.FloatTensor).cuda()
-        edge_var = torch.autograd.Variable(edge).type(torch.FloatTensor).cuda()
+        mask_var = torch.autograd.Variable(mask).type(torch.LongTensor).cuda()
+        edge_var = torch.autograd.Variable(edge).type(torch.LongTensor).cuda()
 
         # 1) output BOUNDARY, REGION, FINAL_REGION from models
         output_ba, output_rg, output_fin = model(input_var)
 
         # 2) compute the current loss on validation: loss_boundary, loss_region, loss_final_region
-        loss_ba = criterion(output_ba, edge_var)
-        loss_rg = criterion(output_rg, mask_var)
-        loss_fin = criterion(output_fin, mask_var)
+        loss_ba = criterion_ba(output_ba, edge_var)
+        loss_rg = criterion_rg(output_rg, mask_var)
+        loss_fin = criterion_rg(output_fin, mask_var)
         loss = w_ba * loss_ba + w_rg * loss_rg + w_fin * loss_fin
 
         # 3) record loss and metrics (DSC_volume)
@@ -299,13 +296,13 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
         if i == 0:
             case_ind_all = case_ind.cpu().numpy()
             input_all = input_var.data.cpu().numpy()[:,0,:,:]
-            output_all = output_fin.data.cpu().numpy()[:,0,:,:]
-            mask_all = mask_var.data.cpu().numpy()[:,0,:,:]
+            output_all = output_fin.data.cpu().numpy()[:,1,:,:]
+            mask_all = mask_var.data.cpu().numpy()[:,:,:]
         else:
             case_ind_all = np.concatenate((case_ind_all, case_ind.cpu().numpy()), axis=0)
             input_all = np.concatenate((input_all, input_var.data.cpu().numpy()[:,0,:,:]), axis=0)
-            output_all = np.concatenate((output_all, output_fin.data.cpu().numpy()[:,0,:,:]), axis=0)
-            mask_all = np.concatenate((mask_all, mask_var.data.cpu().numpy()[:,0,:,:]), axis=0)
+            output_all = np.concatenate((output_all, output_fin.data.cpu().numpy()[:,1,:,:]), axis=0)
+            mask_all = np.concatenate((mask_all, mask_var.data.cpu().numpy()[:,:,:]), axis=0)
 
 
     # 5) Calcuate the DSC for each volume & the mean DSC
@@ -314,14 +311,16 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
     # 6) Record loss, m; Visualize the segmentation results (VALIDATE)
     # Print the loss, losses_ba, loss_rg, loss_fin, metric_DSC_slice, every args.print_frequency during training
     print('Epoch: [{0}]\t'
-              'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-              'Loss_BA {loss_ba.val:.4f} ({loss_ba.avg:.4f})\t'
-              'Loss_RG {loss_rg.val:.4f} ({loss_rg.avg:.4f})\t'
-              'Loss_Fin {loss_fin.val:.4f} ({loss_fin.avg:.4f})\t'.format(epoch,
-                                                                          loss=losses,
-                                                                          loss_ba=losses_ba,
-                                                                          loss_rg=losses_rg,
-                                                                          loss_fin=losses_fin))
+          'DSC {DSC}\t'
+          'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+          'Loss_BA {loss_ba.val:.4f} ({loss_ba.avg:.4f})\t'
+          'Loss_RG {loss_rg.val:.4f} ({loss_rg.avg:.4f})\t'
+          'Loss_Fin {loss_fin.val:.4f} ({loss_fin.avg:.4f})\t'.format(epoch,
+                                                                      DSC=mDSCv[0],
+                                                                      loss=losses,
+                                                                      loss_ba=losses_ba,
+                                                                      loss_rg=losses_rg,
+                                                                      loss_fin=losses_fin))
 
     # Plot the training loss, loss_ba, loss_rg, loss_fin, metric_DSC_slice
     data_logger.scalar_summary(tag='validate/loss', value=losses.avg, step=epoch)

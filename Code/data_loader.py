@@ -96,8 +96,8 @@ class CTTumorDataset(Dataset):
             edge = edge.numpy()
 
             image = np.repeat(image, 3, axis=0)
-            mask = np.concatenate((mask, 1-mask), axis=0)
-            edge = np.concatenate((edge, 1-edge), axis=0)
+            mask = mask[0, :, :]
+            edge = edge[0, :, :]
 
             image = torch.from_numpy(image).float(); image = self.norm(image)
             mask = torch.from_numpy(mask)
