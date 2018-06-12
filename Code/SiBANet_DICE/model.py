@@ -188,9 +188,12 @@ class SiBANET(nn.Module):
 
         # when scale>1, upsample the kernel weights
         else:
-            w1_1.requires_grad = False; w1_2.requires_grad = False
-            w2_1.requires_grad = False; w2_2.requires_grad = False
-            w3_1.requires_grad = False; w3_2.requires_grad = False;  w3_3.requires_grad = False
+            # w1_1.requires_grad = False; w1_2.requires_grad = False
+            # w2_1.requires_grad = False; w2_2.requires_grad = False
+            # w3_1.requires_grad = False; w3_2.requires_grad = False;  w3_3.requires_grad = False
+            w1_1.requires_grad = True; w1_2.requires_grad = True
+            w2_1.requires_grad = True; w2_2.requires_grad = True
+            w3_1.requires_grad = True; w3_2.requires_grad = True;  w3_3.requires_grad = True
 
             sz1_1 = np.round(scale * np.array(w1_1.size()[2:]))
             sz1_2 = np.round(scale * np.array(w1_2.size()[2:]))

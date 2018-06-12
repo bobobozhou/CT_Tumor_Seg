@@ -77,7 +77,7 @@ parser.add_argument('--test_list_dir', default='../../Data/public_data/dir/test_
 
 n_classes = 4
 class_names = ['Lung', 'Breast', 'Skin', 'Liver']
-w_ba = 0; w_rg = 1; w_fin = 1
+w_ba = 1; w_rg = 1; w_fin = 1
 best_m = 0
 
 
