@@ -99,8 +99,27 @@ class SiBANET(nn.Module):
         )
 
         '''Final combination block'''
+        self.c1_fin = nn.Sequential(
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.ReLU(inplace=True)
+        )
+        self.c2_fin = nn.Sequential(
+            nn.Upsample(size=(112, 112), mode='bilinear'),
+            nn.Conv2d(in_channels=128, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.ReLU(inplace=True)
+        )
+        self.c3_fin = nn.Sequential(
+            nn.Upsample(size=(112, 112), mode='bilinear'),
+            nn.Conv2d(in_channels=256, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.ReLU(inplace=True)
+        )
+        self.c4_fin = nn.Sequential(
+            nn.Conv2d(in_channels=192, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels=64, out_channels=3, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+        )
         self.c_fin = nn.Sequential(
-            nn.Conv2d(in_channels=2, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.Conv2d(in_channels=5, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
             nn.ReLU(inplace=True),
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
             nn.ReLU(inplace=True),
@@ -151,7 +170,13 @@ class SiBANET(nn.Module):
         out_rg = F.sigmoid(self.c4_rg(out_cat_rg))     # used as input for final predict
 
         # Combination Stream to final Region output
-        out_cat_fin = torch.cat((self.c4_ba(out_cat_ba), self.c4_rg(out_cat_rg)), 1)
+        out1_cat_fin = self.c1_fin(out1_cat)
+        out2_cat_fin = self.c2_fin(out2_cat)
+        out3_cat_fin = self.c3_fin(out3_cat)
+        out_cat_fin = torch.cat((out1_cat_rg, out2_cat_rg, out3_cat_rg), 1)
+        out_cat_fin = self.c4_fin(out_cat_fin)
+
+        out_cat_fin = torch.cat((out_cat_fin, self.c4_ba(out_cat_ba), self.c4_rg(out_cat_rg)), 1)
         out_fin = F.sigmoid(self.c_fin(out_cat_fin))
 
         return out_ba, out_rg, out_fin

@@ -49,7 +49,7 @@ class CTTumorDataset(Dataset):
                 edge_name = os.path.join(edge_data_dir, edge_name)
                 edge_names.append(edge_name)
 
-                class_vec = items[4:]
+                class_vec = items[5:]
                 class_vec = [int(i) for i in class_vec]
                 class_vecs.append(class_vec)
 

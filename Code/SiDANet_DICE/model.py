@@ -17,12 +17,12 @@ import math
 import ipdb
 
 
-""" Scale-invariant Boundary Aware Net (SiBA-Net - DICE Version) """
+""" Scale-invariant Distance Aware Net (SiDA-Net - DICE Version) """
 
 
-class SiBANET(nn.Module):
+class SiDANET(nn.Module):
     def __init__(self, num_classes=4):
-        super(SiBANET, self).__init__()
+        super(SiDANET, self).__init__()
 
         # TODO: load pre-trained weights from VGG16-Net
         # load parts of pre-train
@@ -129,18 +129,18 @@ class SiBANET(nn.Module):
                                                         self.w2_1, self.b2_1, self.w2_2, self.b2_2,
                                                         self.w3_1, self.b3_1, self.w3_2, self.b3_2, self.w3_3, self.b3_3)
         
-        # Compare vertically (along channel) for 'Boundary' & 'Region'
+        # Compare vertically (along channel) for 'DisMap' & 'Region'
         out1_cat = torch.max(out1_sc1, torch.max(out1_sc2, out1_sc3))
         out2_cat = torch.max(out2_sc1, torch.max(out2_sc2, out2_sc3))
         out3_cat = torch.max(out3_sc1, torch.max(out3_sc2, out3_sc3))
 
-        # Up-Stream to Boundary output
+        # Up-Stream to DisMap output
         '''Boundary branch: upsample & conv to concatenate horizontally'''
         out1_cat_ba = self.c1_ba(out1_cat)
         out2_cat_ba = self.c2_ba(out2_cat)
         out3_cat_ba = self.c3_ba(out3_cat)
         out_cat_ba = torch.cat((out1_cat_ba, out2_cat_ba, out3_cat_ba), 1)
-        out_ba = F.sigmoid(self.c4_ba(out_cat_ba))     # used as input for final predict
+        out_ba = 60 * F.sigmoid(self.c4_ba(out_cat_ba))     # used as input for final predict
 
         # Bottom-Stream to Region output
         '''Regions branch: upsample & conv to concatenate horizontally'''
@@ -151,7 +151,7 @@ class SiBANET(nn.Module):
         out_rg = F.sigmoid(self.c4_rg(out_cat_rg))     # used as input for final predict
 
         # Combination Stream to final Region output
-        out_cat_fin = torch.cat((self.c4_ba(out_cat_ba), self.c4_rg(out_cat_rg)), 1)
+        out_cat_fin = torch.cat((out_ba, out_rg), 1)
         out_fin = F.sigmoid(self.c_fin(out_cat_fin))
 
         return out_ba, out_rg, out_fin
@@ -221,12 +221,12 @@ class SiBANET(nn.Module):
         return x_out1, x_out2, x_out3
 
 
-def SiBA_net(fix_para=False, **kwargs):
+def SiDA_net(fix_para=False, **kwargs):
     """
     Args:
         fix_para (bool): If True, Fix the weights in part of the CNN
     """
-    model = SiBANET(**kwargs)
+    model = SiDANET(**kwargs)
 
     # Optional: Fix weights in certain layers
     if fix_para is False:
