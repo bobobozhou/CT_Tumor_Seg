@@ -43,7 +43,7 @@ parser.add_argument('--epochs', default=1000000, type=int, metavar='N',
                     help='number of epochs for training network')
 parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('--batch_size', default=36, type=int, metavar='N',
+parser.add_argument('--batch_size', default=16, type=int, metavar='N',
                     help='mini-batch size for training (default: 64)')
 parser.add_argument('--lr', default=0.0001, type=float, metavar='LR',
                     help='initial learning rate')
@@ -94,7 +94,7 @@ def main():
     cudnn.benchmark = True
 
     ''' Define loss function (criterion) and optimizer '''
-    criterion_ba = nn.CrossEntropyLoss(weight=torch.Tensor([1, 1])).cuda()
+    criterion_ba = nn.CrossEntropyLoss(weight=torch.Tensor([1, 1000])).cuda()
     criterion_rg = nn.CrossEntropyLoss(weight=torch.Tensor([1, 1])).cuda()
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=args.lr,
