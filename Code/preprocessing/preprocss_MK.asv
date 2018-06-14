@@ -22,7 +22,7 @@ label_list = raw(:,2);
 cls_list = raw(:,5);
 
 ind_slice = 0;
-for i = 1:length(CT_list)
+for i = 5999:length(CT_list)
     ind_slice = ind_slice + 1  % count how many CT slice
     
     %% imread data
@@ -49,8 +49,8 @@ for i = 1:length(CT_list)
             y_start = max(1, min_y - (70 - y_size)/2); y_end = min(512, max_y + (70 - y_size)/2); 
 
         else     % if tumor>60x60, crop the original size add 15% width
-            x_start = max(1, round(min(x) - 0.15 * x_size)); x_end = min(512, round(max(x) + 0.15 * x_size));
-            y_start = max(1, round(min(y) - 0.15 * y_size)); y_end = min(512, round(max(y) + 0.15 * y_size));    
+            x_start = round(min(x) - 0.15 * x_size); x_end = round(max(x) + 0.15 * x_size);
+            y_start = round(min(y) - 0.15 * y_size); y_end = round(max(y) + 0.15 * y_size);    
 
         end
 
@@ -82,12 +82,12 @@ for i = 1:length(CT_list)
             dismap_file_name, " 0 0 0 0 \n"));
         fprintf(fileID_train, line);
 
-%         figure(1),
-%         subplot(1,4,1); I=imread(img_save); imshow(I,[-1000 3000]);
-%         subplot(1,4,2); I=imread(mask_save); imshow(I,[0 1]);
-%         subplot(1,4,3); I=imread(edge_save); imshow(I,[0 1]);
-%         subplot(1,4,4); I=imread(dismap_save); imshow(I,[]);
-%         drawnow;
+        figure(1),
+        subplot(1,4,1); I=imread(img_save); imshow(I,[-1000 3000]);
+        subplot(1,4,2); I=imread(mask_save); imshow(I,[0 1]);
+        subplot(1,4,3); I=imread(edge_save); imshow(I,[0 1]);
+        subplot(1,4,4); I=imread(dismap_save); imshow(I,[]);
+        drawnow;
         
         %% crop random location
         mat = zeros(size(I_ct));
@@ -96,8 +96,8 @@ for i = 1:length(CT_list)
         [x,y] = ind2sub(size(I_sel), find(I_sel==1));
         rand_n = randi([1 length(x)], 1);
 
-        x_start = max(1, x(rand_n)-35); x_end = min(512, x(rand_n)+34);
-        y_start = max(1, y(rand_n)-35); y_end = min(512, y(rand_n)+34); 
+        x_start = x(rand_n)-35; x_end = x(rand_n)+34;
+        y_start = y(rand_n)-35; y_end = y(rand_n)+34; 
 
         img_patch_tumor = I_ct(x_start:x_end, y_start:y_end);
         mask_patch_tumor = I_label(x_start:x_end, y_start:y_end);
@@ -127,12 +127,12 @@ for i = 1:length(CT_list)
             dismap_file_name, " 0 0 0 0 \n"));
         fprintf(fileID_train, line);
 
-%         figure(2),
-%         subplot(1,4,1); I=imread(img_save); imshow(I,[-1000 3000]);
-%         subplot(1,4,2); I=imread(mask_save); imshow(I,[0 1]);
-%         subplot(1,4,3); I=imread(edge_save); imshow(I,[0 1]);
-%         subplot(1,4,4); I=imread(dismap_save); imshow(I,[]);
-%         drawnow;
+        figure(2),
+        subplot(1,4,1); I=imread(img_save); imshow(I,[-1000 3000]);
+        subplot(1,4,2); I=imread(mask_save); imshow(I,[0 1]);
+        subplot(1,4,3); I=imread(edge_save); imshow(I,[0 1]);
+        subplot(1,4,4); I=imread(dismap_save); imshow(I,[]);
+        drawnow;
     end
 
 end
