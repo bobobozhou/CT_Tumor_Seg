@@ -62,6 +62,8 @@ for i = 1:length(CT_list)
         % save the img & label & txt information
         name_label = label_list{i};
         name_main = name_label(1:strfind(name_label, '_label.png')-1);
+        name_main = name_main(~isspace(name_main));
+        
         img_file_name = strcat(name_main, '_tumor', '_img', '.png');
         mask_file_name = strcat(name_main, '_tumor', '_mask', '.png');
         edge_file_name = strcat(name_main, '_tumor', '_edge', '.png');
@@ -89,43 +91,45 @@ for i = 1:length(CT_list)
 %         subplot(1,4,4); I=imread(dismap_save); imshow(I,[]);
 %         drawnow;
         
-        %% crop random location
-        mat = zeros(size(I_ct));
-        mat(512*0.3:512 - 512*0.3, 512*0.2:512 - 512*0.2) = 1;
-        I_sel = mat.*(I_ct < 400);
-        [x,y] = ind2sub(size(I_sel), find(I_sel==1));
-        rand_n = randi([1 length(x)], 1);
-
-        x_start = max(1, x(rand_n)-35); x_end = min(512, x(rand_n)+34);
-        y_start = max(1, y(rand_n)-35); y_end = min(512, y(rand_n)+34); 
-
-        img_patch_tumor = I_ct(x_start:x_end, y_start:y_end);
-        mask_patch_tumor = I_label(x_start:x_end, y_start:y_end);
-        edge_patch_tumor = uint16(edge(mask_patch_tumor,'canny',0.5));
-        dismap_patch_tumor = uint16(bwdist(~mask_patch_tumor));
-
-        % save the img & label & txt information
-        name_label = label_list{i};
-        name_main = name_label(1:strfind(name_label, '_label.png')-1);
-        img_file_name = strcat(name_main, '_rand', '_img', '.png');
-        mask_file_name = strcat(name_main, '_rand', '_mask', '.png');
-        edge_file_name = strcat(name_main, '_rand', '_edge', '.png');
-        dismap_file_name = strcat(name_main, '_rand', '_dismap', '.png');
-
-        img_save = char(strcat(save_dir, 'image/', img_file_name));
-        imwrite(img_patch_tumor, img_save);
-        mask_save = char(strcat(save_dir, 'mask/', mask_file_name));
-        imwrite(mask_patch_tumor, mask_save);
-        edge_save = char(strcat(save_dir, 'edge/', edge_file_name));
-        imwrite(edge_patch_tumor, edge_save);
-        dismap_save = char(strcat(save_dir, 'dismap/', dismap_file_name));
-        imwrite(dismap_patch_tumor, dismap_save);
-
-        line = char(strcat(string(0), " ", img_file_name, " ", ...
-            mask_file_name, " ", ...
-            edge_file_name, " ", ...
-            dismap_file_name, " 0 0 0 0 \n"));
-        fprintf(fileID_train, line);
+%         %% crop random location
+%         mat = zeros(size(I_ct));
+%         mat(512*0.3:512 - 512*0.3, 512*0.2:512 - 512*0.2) = 1;
+%         I_sel = mat.*(I_ct < 400);
+%         [x,y] = ind2sub(size(I_sel), find(I_sel==1));
+%         rand_n = randi([1 length(x)], 1);
+% 
+%         x_start = max(1, x(rand_n)-35); x_end = min(512, x(rand_n)+34);
+%         y_start = max(1, y(rand_n)-35); y_end = min(512, y(rand_n)+34); 
+% 
+%         img_patch_tumor = I_ct(x_start:x_end, y_start:y_end);
+%         mask_patch_tumor = I_label(x_start:x_end, y_start:y_end);
+%         edge_patch_tumor = uint16(edge(mask_patch_tumor,'canny',0.5));
+%         dismap_patch_tumor = uint16(bwdist(~mask_patch_tumor));
+% 
+%         % save the img & label & txt information
+%         name_label = label_list{i};
+%         name_main = name_label(1:strfind(name_label, '_label.png')-1);
+%         name_main = name_main(~isspace(name_main));
+%         
+%         img_file_name = strcat(name_main, '_rand', '_img', '.png');
+%         mask_file_name = strcat(name_main, '_rand', '_mask', '.png');
+%         edge_file_name = strcat(name_main, '_rand', '_edge', '.png');
+%         dismap_file_name = strcat(name_main, '_rand', '_dismap', '.png');
+% 
+%         img_save = char(strcat(save_dir, 'image/', img_file_name));
+%         imwrite(img_patch_tumor, img_save);
+%         mask_save = char(strcat(save_dir, 'mask/', mask_file_name));
+%         imwrite(mask_patch_tumor, mask_save);
+%         edge_save = char(strcat(save_dir, 'edge/', edge_file_name));
+%         imwrite(edge_patch_tumor, edge_save);
+%         dismap_save = char(strcat(save_dir, 'dismap/', dismap_file_name));
+%         imwrite(dismap_patch_tumor, dismap_save);
+% 
+%         line = char(strcat(string(0), " ", img_file_name, " ", ...
+%             mask_file_name, " ", ...
+%             edge_file_name, " ", ...
+%             dismap_file_name, " 0 0 0 0 \n"));
+%         fprintf(fileID_train, line);
 
 %         figure(2),
 %         subplot(1,4,1); I=imread(img_save); imshow(I,[-1000 3000]);

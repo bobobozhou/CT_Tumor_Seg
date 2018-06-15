@@ -1,1 +1,15 @@
 Data
+Code/SiBANet/logs
+Code/SiBANet/models
+Code/SiBANet_DICE/logs
+Code/SiBANet_DICE/models
+Code/SiBANet_DICE_new/logs
+Code/SiBANet_DICE_new/models
+Code/SiBANet_DICE_new_test/logs
+Code/SiBANet_DICE_new_test/models
+Code/SiDANet_DICE/logs
+Code/SiDANet_DICE/models
+Code/UNet/logs
+Code/UNet/models
+Code/UNet_DICE/logs
+Code/UNet_DICE/models
