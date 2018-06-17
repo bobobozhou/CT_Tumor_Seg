@@ -2,9 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9362b302-b9bf-432a-b6b4-a9528caa16c9" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Code/SiBANet_DICE_new/test_crf.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Code/CRF/pydensecrf" afterPath="$PROJECT_DIR$/Code/CRF/pydensecrf" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Code/OtherData/examples/Non RGB Example.ipynb" afterPath="$PROJECT_DIR$/Code/OtherData/examples/Non RGB Example.ipynb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Code/OtherData/examples/inference.py" afterPath="$PROJECT_DIR$/Code/OtherData/examples/inference.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Code/OtherData/examples/test.py" afterPath="$PROJECT_DIR$/Code/OtherData/examples/test.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Code/SiBANet_DICE_new/utilizes.py" afterPath="$PROJECT_DIR$/Code/SiBANet_DICE_new/utilizes.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -15,13 +18,37 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="test.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="test.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Code/OtherData/examples/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="396">
-              <caret line="34" column="33" lean-forward="true" selection-start-line="34" selection-start-column="33" selection-end-line="34" selection-end-column="33" />
+            <state relative-caret-position="264">
+              <caret line="99" column="0" lean-forward="false" selection-start-line="99" selection-start-column="0" selection-end-line="104" selection-end-column="42" />
               <folding>
                 <element signature="e#30#64#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="utilizes.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Code/SiBANet_DICE_new/utilizes.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="282">
+              <caret line="204" column="37" lean-forward="true" selection-start-line="204" selection-start-column="37" selection-end-line="204" selection-end-column="37" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test_crf.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Code/SiBANet_DICE_new/test_crf.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="360">
+              <caret line="20" column="26" lean-forward="true" selection-start-line="20" selection-start-column="26" selection-end-line="20" selection-end-column="26" />
+              <folding>
+                <element signature="e#0#34#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -55,11 +82,14 @@
         <option value="$PROJECT_DIR$/Code/CRF/pydensecrf/examples/test1.py" />
         <option value="$PROJECT_DIR$/Code/CRF/pydensecrf/examples/inference.py" />
         <option value="$PROJECT_DIR$/Code/CRF/pydensecrf/examples/test.py" />
+        <option value="$PROJECT_DIR$/Code/OtherData/examples/inference.py" />
         <option value="$PROJECT_DIR$/Code/OtherData/examples/test.py" />
+        <option value="$PROJECT_DIR$/Code/SiBANet_DICE_new/utilizes.py" />
+        <option value="$PROJECT_DIR$/Code/SiBANet_DICE_new/test_crf.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="65" />
     <option name="y" value="-4" />
     <option name="width" value="1855" />
@@ -102,8 +132,7 @@
               <item name="CT_Tumor_Seg" type="b2602c69:ProjectViewProjectNode" />
               <item name="CT_Tumor_Seg" type="462c0819:PsiDirectoryNode" />
               <item name="Code" type="462c0819:PsiDirectoryNode" />
-              <item name="OtherData" type="462c0819:PsiDirectoryNode" />
-              <item name="examples" type="462c0819:PsiDirectoryNode" />
+              <item name="SiBANet_DICE" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="CT_Tumor_Seg" type="b2602c69:ProjectViewProjectNode" />
@@ -135,7 +164,24 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.test (1)">
+  <component name="RunManager" selected="Python.test_crf">
+    <configuration name="inference (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Code/OtherData/examples" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="CT_Tumor_Seg" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Code/OtherData/examples/inference.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+    </configuration>
     <configuration name="inference" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -187,54 +233,37 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
-    <configuration name="test1" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="test_crf" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Code/CRF/pydensecrf/examples" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Code/SiBANet_DICE_new" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="CT_Tumor_Seg" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Code/CRF/pydensecrf/examples/test1.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-    </configuration>
-    <configuration name="train (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Code/SiBANet" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="CT_Tumor_Seg" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Code/SiBANet/train.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Code/SiBANet_DICE_new/test_crf.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.train (1)" />
-      <item index="1" class="java.lang.String" itemvalue="Python.inference" />
-      <item index="2" class="java.lang.String" itemvalue="Python.test" />
-      <item index="3" class="java.lang.String" itemvalue="Python.test1" />
-      <item index="4" class="java.lang.String" itemvalue="Python.test (1)" />
+      <item index="0" class="java.lang.String" itemvalue="Python.inference" />
+      <item index="1" class="java.lang.String" itemvalue="Python.test" />
+      <item index="2" class="java.lang.String" itemvalue="Python.test (1)" />
+      <item index="3" class="java.lang.String" itemvalue="Python.inference (1)" />
+      <item index="4" class="java.lang.String" itemvalue="Python.test_crf" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.test (1)" />
-        <item index="1" class="java.lang.String" itemvalue="Python.test" />
-        <item index="2" class="java.lang.String" itemvalue="Python.inference" />
-        <item index="3" class="java.lang.String" itemvalue="Python.test1" />
-        <item index="4" class="java.lang.String" itemvalue="Python.train (1)" />
+        <item index="0" class="java.lang.String" itemvalue="Python.test_crf" />
+        <item index="1" class="java.lang.String" itemvalue="Python.test (1)" />
+        <item index="2" class="java.lang.String" itemvalue="Python.inference (1)" />
+        <item index="3" class="java.lang.String" itemvalue="Python.test" />
+        <item index="4" class="java.lang.String" itemvalue="Python.inference" />
       </list>
     </recent_temporary>
   </component>
@@ -261,7 +290,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
+    <frame x="65" y="-4" width="1855" height="1084" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20176893" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -289,7 +318,14 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="49" />
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Code/OtherData/examples/inference.py</url>
+          <line>46</line>
+          <option name="timeStamp" value="50" />
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="53" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -464,7 +500,7 @@
         <state relative-caret-position="180">
           <caret line="10" column="4" lean-forward="false" selection-start-line="10" selection-start-column="4" selection-end-line="10" selection-end-column="35" />
           <folding>
-            <element signature="e#86#96#0" expanded="true" />
+            <element signature="e#86#96#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -474,7 +510,7 @@
         <state relative-caret-position="-2794">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#0#12#0" expanded="true" />
+            <element signature="e#0#12#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -487,12 +523,40 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Code/OtherData/examples/inference.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="346">
+          <caret line="85" column="4" lean-forward="false" selection-start-line="85" selection-start-column="4" selection-end-line="86" selection-end-column="65" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Code/OtherData/examples/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="396">
-          <caret line="34" column="33" lean-forward="true" selection-start-line="34" selection-start-column="33" selection-end-line="34" selection-end-column="33" />
+        <state relative-caret-position="264">
+          <caret line="99" column="0" lean-forward="false" selection-start-line="99" selection-start-column="0" selection-end-line="104" selection-end-column="42" />
           <folding>
             <element signature="e#30#64#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Code/SiBANet_DICE_new/utilizes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="282">
+          <caret line="204" column="37" lean-forward="true" selection-start-line="204" selection-start-column="37" selection-end-line="204" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Code/SiBANet_DICE_new/test_crf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="20" column="26" lean-forward="true" selection-start-line="20" selection-start-column="26" selection-end-line="20" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#34#0" expanded="true" />
           </folding>
         </state>
       </provider>

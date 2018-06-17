@@ -22,10 +22,10 @@ H, W, NLABELS = 112, 112, 2
 img = np.load('input_var.npy')
 img = img[0,:,:][:,:,np.newaxis]
 
-pred = np.load('output_fin.npy')
-pred = pred[0, :, :]
-pred = np.tile(pred[np.newaxis, :, :], (2,1,1))
-pred[1, :, :] = 1 - pred[0, :, :]
+# pred = np.load('output_fin.npy')
+# pred = pred[0, :, :]
+# pred = np.tile(pred[np.newaxis, :, :], (2,1,1))
+# pred[1, :, :] = 1 - pred[0, :, :]
 
 pos = np.stack(np.mgrid[0:H, 0:W], axis=2)
 rv = multivariate_normal([H // 2, W // 2 - 15], (H // 9) * (W // 9))
@@ -71,6 +71,7 @@ d.setUnaryEnergy(U)
 
 pairwise_energy = create_pairwise_bilateral(sdims=(10,10), schan=(0.01,), img=img, chdim=2)
 d.addPairwiseEnergy(pairwise_energy, compat=10)
+d.addPairwiseGaussian(sxy=(3, 3), compat=3, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
 
 
 # In[47]:

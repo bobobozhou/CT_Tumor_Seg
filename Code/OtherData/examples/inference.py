@@ -18,16 +18,20 @@ except ImportError:
 
 from pydensecrf.utils import unary_from_labels, create_pairwise_bilateral, create_pairwise_gaussian
 
-if len(sys.argv) != 4:
-    print("Usage: python {} IMAGE ANNO OUTPUT".format(sys.argv[0]))
-    print("")
-    print("IMAGE and ANNO are inputs and OUTPUT is where the result should be written.")
-    print("If there's at least one single full-black pixel in ANNO, black is assumed to mean unknown.")
-    sys.exit(1)
+# if len(sys.argv) != 4:
+#     print("Usage: python {} IMAGE ANNO OUTPUT".format(sys.argv[0]))
+#     print("")
+#     print("IMAGE and ANNO are inputs and OUTPUT is where the result should be written.")
+#     print("If there's at least one single full-black pixel in ANNO, black is assumed to mean unknown.")
+#     sys.exit(1)
 
-fn_im = sys.argv[1]
-fn_anno = sys.argv[2]
-fn_output = sys.argv[3]
+# fn_im = sys.argv[1]
+# fn_anno = sys.argv[2]
+# fn_output = sys.argv[3]
+
+fn_im = 'im1.png'
+fn_anno = 'anno1.png'
+fn_output = 'out1.png'
 
 ##################################
 ### Read images and annotation ###

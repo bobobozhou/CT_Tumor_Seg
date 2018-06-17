@@ -1,5 +1,7 @@
 import numpy as np
 from skimage.filters import threshold_otsu
+import pydensecrf.densecrf as dcrf
+from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral, create_pairwise_gaussian
 import ipdb
 
 class AverageMeter(object):
@@ -194,3 +196,29 @@ def vol_to_montage(vol):
             image_id += 1
 
     return M
+
+
+def crf_segment(img, pred, iter, n_labels):
+    # prepare the image and prediction
+    img = img[:, :, np.newaxis]
+    pred = np.tile(pred[np.newaxis, :, :], (2, 1, 1))
+    pred[1, :, :] = 1 - pred[0, :, :]
+
+    # setup the dense conditional random field for segmentation
+    d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], n_labels)
+
+    U = unary_from_softmax(pred)  # note: num classes is first dim
+    d.setUnaryEnergy(U)
+
+    pairwise_energy = create_pairwise_bilateral(sdims=(10, 10), schan=(0.01,), img=img, chdim=2)
+    d.addPairwiseEnergy(pairwise_energy, compat=10)
+    d.addPairwiseGaussian(sxy=(3, 3), compat=3, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
+
+    # run iterative inference to do segmentation
+    Q, tmp1, tmp2 = d.startInference()
+    for _ in range(iter):
+        d.stepInference(Q, tmp1, tmp2)
+    kl = d.klDivergence(Q) / (img.shape[1] * img.shape[0])
+    map = np.argmax(Q, axis=0).reshape((img.shape[1], img.shape[0]))
+
+    return map, kl
