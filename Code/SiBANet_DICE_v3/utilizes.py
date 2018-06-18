@@ -1,5 +1,8 @@
 import numpy as np
 from skimage.filters import threshold_otsu
+from scipy import ndimage
+import pydensecrf.densecrf as dcrf
+from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral, create_pairwise_gaussian
 import ipdb
 
 class AverageMeter(object):
@@ -166,8 +169,11 @@ def prob_to_segment(prob):
     threshold the predicted segmentation image (a probablity image/volume)
     using 0.5 hard thresholding
     """
-    thresh = threshold_otsu(prob)
-    # thresh = 0.5
+    if len(np.unique(prob)) is 1:
+        thresh = 0.5
+    else:
+        thresh = threshold_otsu(prob)
+
     seg = prob > thresh
     seg = np.asarray(seg).astype(np.bool)
 
@@ -191,3 +197,53 @@ def vol_to_montage(vol):
             image_id += 1
 
     return M
+
+
+def generate_CRF(img, pred, iter, n_labels):
+    '''
+    INPUT
+    ----------------------------------------
+    img: nimages x h x w
+    pred: nimages x h x 2
+    iter: number of iteration for CRF inference
+    n_labels: number of class
+
+    RETUREM
+    ----------------------------------------
+    map: label generated from CRF using Unary & Image
+    '''
+
+    for i in range(img.shape[0]):
+        # prepare the image and prediction
+        img_ind = img[i, :, :][:, :, np.newaxis]
+        pred_ind = np.tile(pred[i, :, :][np.newaxis, :, :], (2, 1, 1))
+        pred_ind[1, :, :] = 1 - pred_ind[0, :, :]
+        # ipdb.set_trace()
+
+        # setup the dense conditional random field for segmentation
+        d = dcrf.DenseCRF2D(img_ind.shape[1], img_ind.shape[0], n_labels)
+
+        U = unary_from_softmax(pred_ind)  # note: num classes is first dim
+        d.setUnaryEnergy(U)
+
+        pairwise_energy = create_pairwise_bilateral(sdims=(10, 10), schan=(0.01,), img=img_ind, chdim=2)
+        d.addPairwiseEnergy(pairwise_energy, compat=55)
+        d.addPairwiseGaussian(sxy=(3, 3), compat=3, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
+
+        # run iterative inference to do segmentation
+        Q, tmp1, tmp2 = d.startInference()
+        for _ in range(iter):
+            d.stepInference(Q, tmp1, tmp2)
+        map_crf = 1 - np.argmax(Q, axis=0).reshape((img_ind.shape[1], img_ind.shape[0]))
+        # kl = d.klDivergence(Q) / (img_ind.shape[1] * img_ind.shape[0])
+
+        # post-proces the binary segmentation (dilate)
+        # map_crf = ndimage.binary_dilation(map_crf, iterations=2)
+
+        # save in the array and output
+        if i == 0:
+            map_all = map_crf[np.newaxis, :, :]
+        else:
+            map_all = np.concatenate((map_all, map_crf[np.newaxis, :, :]), axis=0)
+
+    return map_all

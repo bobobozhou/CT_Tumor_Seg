@@ -53,26 +53,26 @@ parser.add_argument('--wd', default=1e-4, type=float, metavar='W',
                     help='weight decay (default: 1e-4)')
 parser.add_argument('--pf', default=1, type=int, metavar='N',
                     help='training print frequency (default: 10)')
-parser.add_argument('--df', default=10, type=int, metavar='N',
+parser.add_argument('--df', default=2, type=int, metavar='N',
                     help='training display image frequency (default: 10)')
-parser.add_argument('--ef', default=100, type=int, metavar='N',
+parser.add_argument('--ef', default=10, type=int, metavar='N',
                     help='evaluate print frequency (default: 2)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 
 '''Set up Data Directory'''
-parser.add_argument('--image_data_dir', default='../../Data/public_data/image', type=str, metavar='PATH',
+parser.add_argument('--image_data_dir', default='../../Data/merck_data/image', type=str, metavar='PATH',
                     help='path to image data')
-parser.add_argument('--mask_data_dir', default='../../Data/public_data/mask', type=str, metavar='PATH',
+parser.add_argument('--mask_data_dir', default='../../Data/merck_data/mask', type=str, metavar='PATH',
                     help='path to mask data')
-parser.add_argument('--edge_data_dir', default='../../Data/public_data/edge', type=str, metavar='PATH',
+parser.add_argument('--edge_data_dir', default='../../Data/merck_data/edge', type=str, metavar='PATH',
                     help='path to edge data')
 
-parser.add_argument('--train_list_dir', default='../../Data/public_data/dir/train_list.txt', type=str, metavar='PATH',
+parser.add_argument('--train_list_dir', default='../../Data/merck_data/dir/train_list.txt', type=str, metavar='PATH',
                     help='path to train data list txt file')
-parser.add_argument('--val_list_dir', default='../../Data/public_data/dir/val_list.txt', type=str, metavar='PATH',
+parser.add_argument('--val_list_dir', default='../../Data/merck_data/dir/val_list.txt', type=str, metavar='PATH',
                     help='path to validation data list txt file')
-parser.add_argument('--test_list_dir', default='../../Data/public_data/dir/test_list.txt', type=str, metavar='PATH',
+parser.add_argument('--test_list_dir', default='../../Data/merck_data/dir/test_list.txt', type=str, metavar='PATH',
                     help='path to test data list txt file')
 
 n_classes = 4
