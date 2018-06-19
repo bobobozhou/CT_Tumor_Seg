@@ -65,13 +65,11 @@ for i = 3:4:length(files)
         img_patch_tumor = V_ct(x_start:x_end, y_start:y_end, zz);
         mask_patch_tumor = V_label(x_start:x_end, y_start:y_end, zz);
         edge_patch_tumor = uint16(edge(mask_patch_tumor,'canny',0.5));
-        dismap_patch_tumor = uint16(bwdist(~mask_patch_tumor));
 
         % save the img & label & txt information
         img_file_name = strcat(strtok(filename, '_label.hdr'), '_img_', string(zz), '.png');
         mask_file_name = strcat(strtok(filename, '_label.hdr'), '_mask_', string(zz), '.png');
         edge_file_name = strcat(strtok(filename, '_label.hdr'), '_edge_', string(zz), '.png');
-        dismap_file_name = strcat(strtok(filename, '_label.hdr'), '_dismap_', string(zz), '.png');
         
         img_save = char(strcat(save_dir, 'image/', img_file_name));
         imwrite(img_patch_tumor, img_save);
@@ -79,29 +77,28 @@ for i = 3:4:length(files)
         imwrite(mask_patch_tumor, mask_save);
         edge_save = char(strcat(save_dir, 'edge/', edge_file_name));
         imwrite(edge_patch_tumor, edge_save);
-        dismap_save = char(strcat(save_dir, 'dismap/', dismap_file_name));
-        imwrite(dismap_patch_tumor, dismap_save);
         
-        line = char(strcat(string(ind_case), " ", img_file_name, " ", ...
+        dis_to_center = sprintf('%0.2f', abs(zz - z_mid)/(max_z - min_z));
+        
+        line = char(strcat(string(ind_case), " ", string(dis_to_center), " ", img_file_name, " ", ...
                 mask_file_name, " ", ...
-                edge_file_name, " ", ...
-                dismap_file_name, " 0 0 0 0 \n"));
+                edge_file_name, ...
+                " 0 0 0 0 \n"));
             fprintf(fileID_test, line);
         
         if zz == z_mid
-            line = char(strcat(string(ind_case), " ", img_file_name, " ", ...
+            line = char(strcat(string(ind_case), " ", string(dis_to_center), " ", img_file_name, " ", ...
                 mask_file_name, " ", ...
-                edge_file_name, " ", ...
-                dismap_file_name, " 0 0 0 0 \n"));
+                edge_file_name, ...
+                " 0 0 0 0 \n"));
             fprintf(fileID_train, line);
             
-            figure(1),
-            subplot(1,4,1); I=imread(img_save); imshow(I,[-1000 3000]);
-            subplot(1,4,2); I=imread(mask_save); imshow(I,[0 1]);
-            subplot(1,4,3); I=imread(edge_save); imshow(I,[0 1]);
-            subplot(1,4,4); I=imread(dismap_save); imshow(I,[]);
-%             suptitle(char(img_file_name));
-            drawnow;
+%             figure(1),
+%             subplot(1,3,1); I=imread(img_save); imshow(I,[-1000 3000]);
+%             subplot(1,3,2); I=imread(mask_save); imshow(I,[0 1]);
+%             subplot(1,3,3); I=imread(edge_save); imshow(I,[0 1]);
+% %             suptitle(char(img_file_name));
+%             drawnow;
         end
 
     end

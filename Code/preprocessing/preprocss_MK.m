@@ -57,7 +57,6 @@ for i = 1:length(CT_list)
         img_patch_tumor = I_ct(x_start:x_end, y_start:y_end);
         mask_patch_tumor = I_label(x_start:x_end, y_start:y_end);
         edge_patch_tumor = uint16(edge(mask_patch_tumor,'canny',0.5));
-        dismap_patch_tumor = uint16(bwdist(~mask_patch_tumor));
 
         % save the img & label & txt information
         name_label = label_list{i};
@@ -67,7 +66,6 @@ for i = 1:length(CT_list)
         img_file_name = strcat(name_main, '_tumor', '_img', '.png');
         mask_file_name = strcat(name_main, '_tumor', '_mask', '.png');
         edge_file_name = strcat(name_main, '_tumor', '_edge', '.png');
-        dismap_file_name = strcat(name_main, '_tumor', '_dismap', '.png');
 
         img_save = char(strcat(save_dir, 'image/', img_file_name));
         imwrite(img_patch_tumor, img_save);
@@ -75,13 +73,13 @@ for i = 1:length(CT_list)
         imwrite(mask_patch_tumor, mask_save);
         edge_save = char(strcat(save_dir, 'edge/', edge_file_name));
         imwrite(edge_patch_tumor, edge_save);
-        dismap_save = char(strcat(save_dir, 'dismap/', dismap_file_name));
-        imwrite(dismap_patch_tumor, dismap_save);
+        
+        dis_to_center = sprintf('%0.2f', 0);
 
-        line = char(strcat(string(0), " ", img_file_name, " ", ...
+        line = char(strcat(string(0), " ", string(dis_to_center), " ", img_file_name, " ", ...
             mask_file_name, " ", ...
-            edge_file_name, " ", ...
-            dismap_file_name, " 0 0 0 0 \n"));
+            edge_file_name, ...
+            " 0 0 0 0 \n"));
         fprintf(fileID_train, line);
 
 %         figure(1),

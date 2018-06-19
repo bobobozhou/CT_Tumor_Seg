@@ -237,8 +237,8 @@ def generate_CRF(img, pred, iter=20, n_labels=2):
         map_crf = 1 - np.argmax(Q, axis=0).reshape((img_ind.shape[1], img_ind.shape[0]))
         # kl = d.klDivergence(Q) / (img_ind.shape[1] * img_ind.shape[0])
 
-        if np.count_nonzero(map_crf) == 0:
-            map_crf1 = pred[i, :, :]
+        if np.count_nonzero(map_crf) <= 5:
+            map_crf = pred[i, :, :]
 
         # post-proces the binary segmentation (dilate)
         map_crf = ndimage.binary_dilation(map_crf, iterations=2)

@@ -37,15 +37,15 @@ class CTTumorDataset(Dataset):
                 case_index = int(items[0])
                 case_indexs.append(case_index)
 
-                image_name = items[1]
+                image_name = items[2]
                 image_name = os.path.join(image_data_dir, image_name)
                 image_names.append(image_name)
 
-                mask_name = items[2]
+                mask_name = items[3]
                 mask_name = os.path.join(mask_data_dir, mask_name)
                 mask_names.append(mask_name)
 
-                edge_name = items[3]
+                edge_name = items[4]
                 edge_name = os.path.join(edge_data_dir, edge_name)
                 edge_names.append(edge_name)
 

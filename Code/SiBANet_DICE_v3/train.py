@@ -298,7 +298,7 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
             mask_all = mask_var.data.cpu().numpy()[:,:,:]
             output_all = generate_CRF(img=input_var.data.cpu().numpy()[:,0,:,:], 
                                       pred=output_fin.data.cpu().numpy()[:,0,:,:],
-                                      iter=100, n_labels=2)
+                                      iter=10, n_labels=2)
 
         else:
             case_ind_all = np.concatenate((case_ind_all, case_ind.cpu().numpy()), axis=0)
@@ -308,7 +308,7 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
             output_fin_np = output_fin.data.cpu().numpy()[:,0,:,:]
             output_all = np.concatenate((output_all, generate_CRF(img=input_var.data.cpu().numpy()[:,0,:,:],
                                                                   pred=output_fin.data.cpu().numpy()[:,0,:,:],
-                                                                  iter=100, n_labels=2)), axis=0)
+                                                                  iter=10, n_labels=2)), axis=0)
 
     # 5) Calcuate the DSC for each volume & the mean DSC
     mDSCv, all_DCS_volume = metric_DSC_volume(output_all, mask_all, case_ind_all)  
@@ -316,12 +316,18 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
     # 6) Record loss, m; Visualize the segmentation results (VALIDATE)
     # Print the loss, losses_ba, loss_rg, loss_fin, metric_DSC_slice, every args.print_frequency during training
     print('Epoch: [{0}]\t'
-          'DSC {DSC}\t'
+          'meanDSC {meanDSC}\t'
+          'medianDSC {medianDSC}\t'
+          'maxDSC {maxDSC}\t'
+          'minDSC {minDSC}\t'
           'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
           'Loss_BA {loss_ba.val:.4f} ({loss_ba.avg:.4f})\t'
           'Loss_RG {loss_rg.val:.4f} ({loss_rg.avg:.4f})\t'
           'Loss_Fin {loss_fin.val:.4f} ({loss_fin.avg:.4f})\t'.format(epoch,
-                                                                      DSC=mDSCv[0],
+                                                                      meanDSC=mDSCv[0],
+                                                                      medianDSC=np.median(all_DCS_volume[0]),
+                                                                      maxDSC=np.max(all_DCS_volume[0]),
+                                                                      minDSC=np.min(all_DCS_volume[0]),
                                                                       loss=losses,
                                                                       loss_ba=losses_ba,
                                                                       loss_rg=losses_rg,
