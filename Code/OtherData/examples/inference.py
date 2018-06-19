@@ -70,8 +70,8 @@ print(n_labels, " labels", (" plus \"unknown\" 0: " if HAS_UNK else ""), set(lab
 ###########################
 ### Setup the CRF model ###
 ###########################
-use_2d = False
-# use_2d = True
+# use_2d = False
+use_2d = True
 if use_2d:
     print("Using 2D specialized functions")
 

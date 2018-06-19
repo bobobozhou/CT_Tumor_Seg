@@ -199,7 +199,7 @@ def vol_to_montage(vol):
     return M
 
 
-def generate_CRF(img, pred, iter, n_labels):
+def generate_CRF(img, pred, iter=20, n_labels=2):
     '''
     INPUT
     ----------------------------------------
@@ -227,8 +227,8 @@ def generate_CRF(img, pred, iter, n_labels):
         d.setUnaryEnergy(U)
 
         pairwise_energy = create_pairwise_bilateral(sdims=(10, 10), schan=(0.01,), img=img_ind, chdim=2)
-        d.addPairwiseEnergy(pairwise_energy, compat=55)
-        d.addPairwiseGaussian(sxy=(3, 3), compat=3, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
+        d.addPairwiseEnergy(pairwise_energy, compat=500)
+        d.addPairwiseGaussian(sxy=(3, 3), compat=500, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
 
         # run iterative inference to do segmentation
         Q, tmp1, tmp2 = d.startInference()
@@ -237,8 +237,11 @@ def generate_CRF(img, pred, iter, n_labels):
         map_crf = 1 - np.argmax(Q, axis=0).reshape((img_ind.shape[1], img_ind.shape[0]))
         # kl = d.klDivergence(Q) / (img_ind.shape[1] * img_ind.shape[0])
 
+        if np.count_nonzero(map_crf) == 0:
+            map_crf1 = pred[i, :, :]
+
         # post-proces the binary segmentation (dilate)
-        # map_crf = ndimage.binary_dilation(map_crf, iterations=2)
+        map_crf = ndimage.binary_dilation(map_crf, iterations=2)
 
         # save in the array and output
         if i == 0:
