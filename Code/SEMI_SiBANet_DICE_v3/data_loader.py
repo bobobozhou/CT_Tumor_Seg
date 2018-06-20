@@ -123,9 +123,7 @@ class CTTumorDataset_unlabel(Dataset):
         """
         Args:
             image_data_dir (string): Directory with all the images.
-            mask_data_dir (string): Directory with all the binary label/annotation.
-            edge_data_dir (string): Directory with all the boundary/edge
-            list_file: Path to the txt file with: image file name + label/annotation file name + class label.
+            list_file: Path to the txt file with: unlabeled file name.
             transform (callable, optional): Optional transform to be applied on a sample.
         """
 
@@ -142,7 +140,7 @@ class CTTumorDataset_unlabel(Dataset):
             for line in f:
                 items = line.split()
 
-                if float(items[1]) > dis_range[0] and float(items[1]) < dis_range[1]:
+                if dis_range[0] < float(items[1]) < dis_range[1]:
                     disper_num = float(items[1])
                     disper_nums.append(disper_num)
 

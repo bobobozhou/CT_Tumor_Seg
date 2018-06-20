@@ -61,28 +61,36 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 
 '''Set up Data Directory'''
-parser.add_argument('--image_data_dir', default='../../Data/merck_data/image', type=str, metavar='PATH',
+parser.add_argument('--image_data_dir', default='../../Data/semi_data/image', type=str, metavar='PATH',
                     help='path to image data')
-parser.add_argument('--mask_data_dir', default='../../Data/merck_data/mask', type=str, metavar='PATH',
+parser.add_argument('--mask_data_dir', default='../../Data/semi_data/mask', type=str, metavar='PATH',
                     help='path to mask data')
-parser.add_argument('--edge_data_dir', default='../../Data/merck_data/edge', type=str, metavar='PATH',
+parser.add_argument('--edge_data_dir', default='../../Data/semi_data/edge', type=str, metavar='PATH',
                     help='path to edge data')
 
-parser.add_argument('--train_list_dir', default='../../Data/merck_data/dir/train_list.txt', type=str, metavar='PATH',
+parser.add_argument('--train_list_dir', default='../../Data/semi_data/dir/train_list.txt', type=str, metavar='PATH',
                     help='path to train data list txt file')
-parser.add_argument('--val_list_dir', default='../../Data/merck_data/dir/val_list.txt', type=str, metavar='PATH',
+parser.add_argument('--val_list_dir', default='../../Data/semi_data/dir/val_list.txt', type=str, metavar='PATH',
                     help='path to validation data list txt file')
-parser.add_argument('--test_list_dir', default='../../Data/merck_data/dir/test_list.txt', type=str, metavar='PATH',
+parser.add_argument('--test_list_dir', default='../../Data/semi_data/dir/test_list.txt', type=str, metavar='PATH',
                     help='path to test data list txt file')
+parser.add_argument('--unlabel_list_dir', default='../../Data/semi_data/dir/unlabel_list.txt', type=str, metavar='PATH',
+                    help='path to unlabelled data list txt file')
 
 n_classes = 4
 class_names = ['Lung', 'Breast', 'Skin', 'Liver']
 w_ba = 1; w_rg = 1; w_fin = 1
 best_m = 0
 
+epoch_semi_set = [600, 600, 600]
+dis_range_set = [[0, 0.2], [0.2, 0.4], [0.4, 1.0]]
+
+STAGE1 = False
+STAGE2 = True
+
 
 def main():
-    global args, best_m
+    global args, best_m, epoch_semi_set, dis_range_set
     args = parser.parse_args()
 
     ''' Initialize and load model (models: VGG16) '''
@@ -113,32 +121,7 @@ def main():
         else:
             print("=> no checkpoint found at '{}'".format(args.resume))
 
-    '''
-    Data loading (CT Tumor Dataset):
-    1) Training Data
-    2) Validation Data
-    '''
-    # 1) training data
-    train_dataset = CTTumorDataset(image_data_dir=args.image_data_dir,
-                                   mask_data_dir=args.mask_data_dir,
-                                   edge_data_dir=args.edge_data_dir,
-                                   list_file=args.train_list_dir,
-                                   transform=
-                                   transforms_3pair.Compose(
-                                       [transforms_3pair.Resize(120),
-                                        transforms_3pair.RandomRotation(20),
-                                        transforms_3pair.RandomCrop(112),
-                                        transforms_3pair.ToTensor(),
-                                        ]), 
-                                   norm=
-                                   transforms.Compose(
-                                       [transforms.Normalize(mean=[0, 0, 0], std=[2000, 2000, 2000]),
-                                        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-                                        ]))
-    train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size,
-                              shuffle=True, num_workers=args.workers, pin_memory=True)
-
-    # 2) validation data
+    # 2) validation data load
     val_dataset = CTTumorDataset(image_data_dir=args.image_data_dir,
                                  mask_data_dir=args.mask_data_dir,
                                  edge_data_dir=args.edge_data_dir,
@@ -148,39 +131,125 @@ def main():
                                      [transforms_3pair.Resize(112),
                                       transforms_3pair.RandomCrop(112),
                                       transforms_3pair.ToTensor(),
-                                      ]), 
+                                      ]),
                                  norm=
                                  transforms.Compose(
                                      [transforms.Normalize(mean=[0, 0, 0], std=[2000, 2000, 2000]),
-                                      transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                                      transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                           std=[0.229, 0.224, 0.225]),
                                       ]))
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size,
                             shuffle=False, num_workers=args.workers, pin_memory=True)
 
-    ''' Create logger for recording the training (Tensorboard)'''
-    data_logger = Logger('./logs/', name=args.model_name)
+    if STAGE1 is True:
+        '''
+        STAGE 1: Initial training using all the mid-slice
+        '''
 
-    ''' Training for epochs'''
-    for epoch in range(args.start_epoch, args.epochs):
-        adjust_learning_rate(optimizer, epoch)
+        '''Data loading (CT Tumor Dataset): Training Data'''
+        # 1) training data load
+        train_dataset = CTTumorDataset(image_data_dir=args.image_data_dir,
+                                       mask_data_dir=args.mask_data_dir,
+                                       edge_data_dir=args.edge_data_dir,
+                                       list_file=args.train_list_dir,
+                                       transform=
+                                       transforms_3pair.Compose(
+                                           [transforms_3pair.Resize(120),
+                                            transforms_3pair.RandomRotation(20),
+                                            transforms_3pair.RandomCrop(112),
+                                            transforms_3pair.ToTensor(),
+                                            ]),
+                                       norm=
+                                       transforms.Compose(
+                                           [transforms.Normalize(mean=[0, 0, 0], std=[2000, 2000, 2000]),
+                                            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                                            ]))
+        train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size,
+                                  shuffle=True, num_workers=args.workers, pin_memory=True)
 
-        # train for one epoch
-        train(train_loader, model, criterion, optimizer, epoch, data_logger=data_logger, class_names=class_names)
-        
-        # evaluate on validation set
-        if epoch % args.ef == 0 or epoch == args.epochs:
-            m = validate(val_loader, model, criterion, epoch, data_logger=data_logger, class_names=class_names)
+        ''' Create logger for recording the training (Tensorboard)'''
+        data_logger = Logger('./logs/', name=args.model_name)
 
-            # remember best metric and save checkpoint
-            is_best = m > best_m
-            best_m = max(m, best_m)
-            save_checkpoint({
-                'epoch': epoch + 1,
-                'model': args.model_name,
-                'state_dict': model.state_dict(),
-                'best_m': best_m,
-                'optimizer': optimizer.state_dict(),
-            }, is_best, model=args.model_name)
+        ''' Training for epochs'''
+        for epoch in range(args.start_epoch, args.epochs):
+            adjust_learning_rate(optimizer, epoch)
+
+            # train for one epoch
+            train(train_loader, model, criterion, optimizer, epoch, data_logger=data_logger, class_names=class_names)
+
+            # evaluate on validation set
+            if epoch % args.ef == 0 or epoch == args.epochs:
+                m = validate(val_loader, model, criterion, epoch, data_logger=data_logger, class_names=class_names)
+
+                # remember best metric and save checkpoint
+                is_best = m > best_m
+                best_m = max(m, best_m)
+                save_checkpoint({
+                    'epoch': epoch + 1,
+                    'model': args.model_name,
+                    'state_dict': model.state_dict(),
+                    'best_m': best_m,
+                    'optimizer': optimizer.state_dict(),
+                }, is_best, model=args.model_name)
+
+    if STAGE2 is True:
+        '''
+        STAGE 2: progressive semi-supervise training using neighbourhood slices
+        using dis_range_set(how big the neighbourhood) & epoch_semi_set(how many epoch for each distance range)
+        '''
+
+        for i, dis_range in enumerate(dis_range_set):
+            '''Predict the neighbourhood slice in distance range (Mask, Edge)'''
+            # data loader for unlabeled image in certain distance range
+
+            # save these predicted mask and edge to the training dir list
+
+            '''Data loading (CT Tumor Dataset):Training Data'''
+            # 1) training data load
+            train_dataset = CTTumorDataset(image_data_dir=args.image_data_dir,
+                                           mask_data_dir=args.mask_data_dir,
+                                           edge_data_dir=args.edge_data_dir,
+                                           list_file=args.train_list_dir,
+                                           transform=
+                                           transforms_3pair.Compose(
+                                               [transforms_3pair.Resize(120),
+                                                transforms_3pair.RandomRotation(20),
+                                                transforms_3pair.RandomCrop(112),
+                                                transforms_3pair.ToTensor(),
+                                                ]),
+                                           norm=
+                                           transforms.Compose(
+                                               [transforms.Normalize(mean=[0, 0, 0], std=[2000, 2000, 2000]),
+                                                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                                                ]))
+            train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size,
+                                      shuffle=True, num_workers=args.workers, pin_memory=True)
+
+            ''' Create logger for recording the training (Tensorboard)'''
+            data_logger = Logger('./logs/', name=args.model_name)
+
+            ''' Training for epochs (include predicted neighbourhood slices)'''
+            epoch_semi = epoch_semi_set[i]
+            for epoch in range(epoch_semi):
+                adjust_learning_rate(optimizer, epoch)
+
+                # train for one epoch
+                train(train_loader, model, criterion, optimizer, epoch, data_logger=data_logger, class_names=class_names)
+
+                # evaluate on validation set
+                if epoch % args.ef == 0 or epoch == args.epochs:
+                    m = validate(val_loader, model, criterion, epoch, data_logger=data_logger, class_names=class_names)
+
+                    # remember best metric and save checkpoint
+                    is_best = m > best_m
+                    best_m = max(m, best_m)
+                    save_checkpoint({
+                        'epoch': epoch + 1,
+                        'model': args.model_name,
+                        'state_dict': model.state_dict(),
+                        'best_m': best_m,
+                        'optimizer': optimizer.state_dict(),
+                    }, is_best, model=args.model_name)
 
 
 def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, class_names=None):
