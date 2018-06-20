@@ -1,6 +1,9 @@
 import numpy as np
 from skimage.filters import threshold_otsu
+from skimage import feature
+import cv2
 from scipy import ndimage
+import os
 import pydensecrf.densecrf as dcrf
 from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral, create_pairwise_gaussian
 import ipdb
@@ -250,3 +253,44 @@ def generate_CRF(img, pred, iter=20, n_labels=2):
             map_all = np.concatenate((map_all, map_crf[np.newaxis, :, :]), axis=0)
 
     return map_all
+
+
+def save_unlabel(img_name_unlabel, img_raw_unlabel, mask_unlabel, img_save_dir, mask_save_dir, edge_save_dir, train_list_save_dir):
+    """
+    save the unlabelled data (image, mask, edge) to corresponding directory
+    Parameters
+    ----------
+    img_name_unlabel:
+        image file name for unlabelled images
+    img_raw_unlabel:  
+        raw image array (unlabelled image)
+    mask_unlabel:  
+        mask predicted array (for unlabelled image)
+    img_save_dir, mask_save_dir, edge_save_dir:
+        saving directory for image, mask, edge array
+
+    """
+
+    if img_name_unlabel.shape[0] != img_raw_unlabel.shape[0] != mask_unlabel.shape[0]:
+        raise ValueError("Number of case mismatch: image, mask, image name must have the same shape!")
+
+    f = open(train_list_save_dir, "a+") 
+
+    for i in range(img_name_unlabel.shape[0]):
+
+        img_name_ind = 'semi_' + img_name_unlabel[i].replace(img_save_dir + '/', '')
+        mask_name_ind = img_name_ind.replace('img', 'mask')
+        edge_name_ind = img_name_ind.replace('img', 'edge')
+
+        img_raw_ind = img_raw_unlabel[i].astype(np.uint16)
+        mask_ind = mask_unlabel[i].astype(np.uint16)
+        edge_ind = feature.canny(mask_ind.astype(np.float32)).astype(np.uint16)
+
+        cv2.imwrite(os.path.join(img_save_dir, img_name_ind), img_raw_ind)
+        cv2.imwrite(os.path.join(mask_save_dir, mask_name_ind), mask_ind)
+        cv2.imwrite(os.path.join(edge_save_dir, edge_name_ind), edge_ind)
+
+        f.write('0 ' + '0.00 ' + img_name_ind + ' ' + mask_name_ind + ' ' + edge_name_ind + ' 0 0 0 0 ' + '\r\n')
+    
+    f.close()
+    ipdb.set_trace()

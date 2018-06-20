@@ -304,8 +304,6 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
             case_ind_all = np.concatenate((case_ind_all, case_ind.cpu().numpy()), axis=0)
             input_all = np.concatenate((input_all, input_var.data.cpu().numpy()[:,0,:,:]), axis=0)
             mask_all = np.concatenate((mask_all, mask_var.data.cpu().numpy()[:,:,:]), axis=0)
-
-            output_fin_np = output_fin.data.cpu().numpy()[:,0,:,:]
             output_all = np.concatenate((output_all, generate_CRF(img=input_var.data.cpu().numpy()[:,0,:,:],
                                                                   pred=output_fin.data.cpu().numpy()[:,0,:,:],
                                                                   iter=10, n_labels=2)), axis=0)

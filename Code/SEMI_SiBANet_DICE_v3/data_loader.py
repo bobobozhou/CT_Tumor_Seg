@@ -140,7 +140,7 @@ class CTTumorDataset_unlabel(Dataset):
             for line in f:
                 items = line.split()
 
-                if dis_range[0] < float(items[1]) < dis_range[1]:
+                if dis_range[0] < float(items[1]) <= dis_range[1]:
                     disper_num = float(items[1])
                     disper_nums.append(disper_num)
 
@@ -200,22 +200,26 @@ class CTTumorDataset_unlabel(Dataset):
         # class_vec = torch.FloatTensor(class_vec)
 
         if self.transform is not None:
-            image = self.transform(image)
+            image_norm = self.transform(image)
+            image_raw = self.transform(image)
             # image, mask, edge = self.transform(image, mask, edge)
             
-            image = image.numpy()
+            image_norm = image_norm.numpy()
+            image_raw = image_raw.numpy()
             # mask = mask.numpy()
             # edge = edge.numpy()
 
-            image = np.repeat(image, 3, axis=0)
+            image_norm = np.repeat(image_norm, 3, axis=0)
+            image_raw = np.repeat(image_raw, 3, axis=0)
             # mask = mask[0, :, :]
             # edge = edge[0, :, :]
 
-            image = torch.from_numpy(image).float(); image = self.norm(image)
+            image_norm = torch.from_numpy(image_norm).float(); image_norm = self.norm(image_norm)
+            image_raw = torch.from_numpy(image_raw).float();
             # mask = torch.from_numpy(mask)
             # edge = torch.from_numpy(edge)
 
-        return image_name, image
+        return image_name, image_norm, image_raw
 
     def __len__(self):
         return len(self.image_names)

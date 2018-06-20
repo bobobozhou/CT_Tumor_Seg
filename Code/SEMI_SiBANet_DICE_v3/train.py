@@ -61,6 +61,10 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 
 '''Set up Data Directory'''
+parser.add_argument('--test_list_dir', default='../../Data/semi_data/dir/test_list.txt', type=str, metavar='PATH',
+                    help='path to test data list txt file')
+
+# initial training data
 parser.add_argument('--image_data_dir', default='../../Data/semi_data/image', type=str, metavar='PATH',
                     help='path to image data')
 parser.add_argument('--mask_data_dir', default='../../Data/semi_data/mask', type=str, metavar='PATH',
@@ -70,20 +74,27 @@ parser.add_argument('--edge_data_dir', default='../../Data/semi_data/edge', type
 
 parser.add_argument('--train_list_dir', default='../../Data/semi_data/dir/train_list.txt', type=str, metavar='PATH',
                     help='path to train data list txt file')
-parser.add_argument('--val_list_dir', default='../../Data/semi_data/dir/val_list.txt', type=str, metavar='PATH',
-                    help='path to validation data list txt file')
-parser.add_argument('--test_list_dir', default='../../Data/semi_data/dir/test_list.txt', type=str, metavar='PATH',
-                    help='path to test data list txt file')
+
+# semi-supervised training data
+parser.add_argument('--image_data_semi_dir', default='../../Data/semi_data/image_semi', type=str, metavar='PATH',
+                    help='path to image data')
+parser.add_argument('--mask_data_semi_dir', default='../../Data/semi_data/mask_semi', type=str, metavar='PATH',
+                    help='path to mask data')
+parser.add_argument('--edge_data_semi_dir', default='../../Data/semi_data/edge_semi', type=str, metavar='PATH',
+                    help='path to edge data')
+
 parser.add_argument('--unlabel_list_dir', default='../../Data/semi_data/dir/unlabel_list.txt', type=str, metavar='PATH',
                     help='path to unlabelled data list txt file')
+parser.add_argument('--train_semi_list_dir', default='../../Data/semi_data/dir/train_semi_list.txt', type=str, metavar='PATH',
+                    help='path to train data list txt file')
 
 n_classes = 4
 class_names = ['Lung', 'Breast', 'Skin', 'Liver']
 w_ba = 1; w_rg = 1; w_fin = 1
 best_m = 0
 
-epoch_semi_set = [600, 600, 600]
-dis_range_set = [[0, 0.2], [0.2, 0.4], [0.4, 1.0]]
+epoch_semi_set = [600, 600, 600]  # number of epoch for progressive semi-training
+dis_range_set = [[0, 0.2], [0.2, 0.4], [0.4, 1.0]]  # distance range progressively added to semi-training
 
 STAGE1 = False
 STAGE2 = True
@@ -141,11 +152,10 @@ def main():
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size,
                             shuffle=False, num_workers=args.workers, pin_memory=True)
 
+    '''
+    STAGE 1: Initial training using all the mid-slice
+    '''
     if STAGE1 is True:
-        '''
-        STAGE 1: Initial training using all the mid-slice
-        '''
-
         '''Data loading (CT Tumor Dataset): Training Data'''
         # 1) training data load
         train_dataset = CTTumorDataset(image_data_dir=args.image_data_dir,
@@ -170,6 +180,11 @@ def main():
         ''' Create logger for recording the training (Tensorboard)'''
         data_logger = Logger('./logs/', name=args.model_name)
 
+        optimizer = torch.optim.SGD(model.parameters(),
+                                lr=args.lr,
+                                momentum=args.momentum,
+                                weight_decay=args.wd)
+
         ''' Training for epochs'''
         for epoch in range(args.start_epoch, args.epochs):
             adjust_learning_rate(optimizer, epoch)
@@ -192,24 +207,46 @@ def main():
                     'optimizer': optimizer.state_dict(),
                 }, is_best, model=args.model_name)
 
+    '''
+    STAGE 2: Progressive semi-supervise training using neighbourhood slices
+    using dis_range_set(how big the neighbourhood) & epoch_semi_set(how many epoch for each distance range)
+    '''
     if STAGE2 is True:
-        '''
-        STAGE 2: progressive semi-supervise training using neighbourhood slices
-        using dis_range_set(how big the neighbourhood) & epoch_semi_set(how many epoch for each distance range)
-        '''
-
         for i, dis_range in enumerate(dis_range_set):
             '''Predict the neighbourhood slice in distance range (Mask, Edge)'''
             # data loader for unlabeled image in certain distance range
-
+            unlabel_dataset = CTTumorDataset_unlabel(image_data_dir=args.image_data_semi_dir,
+                                                     list_file=args.unlabel_list_dir,
+                                                     dis_range = dis_range,
+                                                     transform=
+                                                     transforms.Compose(
+                                                         [transforms.Resize(112),
+                                                          transforms.RandomCrop(112),
+                                                          transforms.ToTensor(),
+                                                          ]),
+                                                     norm=
+                                                     transforms.Compose(
+                                                         [transforms.Normalize(mean=[0, 0, 0], std=[2000, 2000, 2000]),
+                                                          transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                                               std=[0.229, 0.224, 0.225]),
+                                                          ]))
+            unlabel_loader = DataLoader(dataset=unlabel_dataset, batch_size=args.batch_size,
+                                        shuffle=False, num_workers=args.workers, pin_memory=True)
+            
             # save these predicted mask and edge to the training dir list
+            img_name_unlabel, img_raw_unlabel, mask_unlabel = predict_unlabel(unlabel_loader, model)
+            save_unlabel(img_name_unlabel, img_raw_unlabel, mask_unlabel, 
+                img_save_dir = args.image_data_semi_dir,
+                mask_save_dir = args.mask_data_semi_dir,
+                edge_save_dir = args.edge_data_semi_dir,
+                train_list_save_dir = args.train_semi_list_dir)
 
-            '''Data loading (CT Tumor Dataset):Training Data'''
-            # 1) training data load
-            train_dataset = CTTumorDataset(image_data_dir=args.image_data_dir,
-                                           mask_data_dir=args.mask_data_dir,
-                                           edge_data_dir=args.edge_data_dir,
-                                           list_file=args.train_list_dir,
+            '''Data loading (CT Tumor Dataset): Training Data (orginal labeled + semi-labeled)'''
+            # 1) all semi-training data load
+            train_dataset = CTTumorDataset(image_data_dir=args.image_data_semi_dir,
+                                           mask_data_dir=args.mask_data_semi_dir,
+                                           edge_data_dir=args.edge_data_semi_dir,
+                                           list_file=args.train_semi_list_dir,
                                            transform=
                                            transforms_3pair.Compose(
                                                [transforms_3pair.Resize(120),
@@ -227,6 +264,11 @@ def main():
 
             ''' Create logger for recording the training (Tensorboard)'''
             data_logger = Logger('./logs/', name=args.model_name)
+
+            optimizer = torch.optim.SGD(model.parameters(),
+                                lr=args.lr,
+                                momentum=args.momentum,
+                                weight_decay=args.wd)
 
             ''' Training for epochs (include predicted neighbourhood slices)'''
             epoch_semi = epoch_semi_set[i]
@@ -373,8 +415,6 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
             case_ind_all = np.concatenate((case_ind_all, case_ind.cpu().numpy()), axis=0)
             input_all = np.concatenate((input_all, input_var.data.cpu().numpy()[:,0,:,:]), axis=0)
             mask_all = np.concatenate((mask_all, mask_var.data.cpu().numpy()[:,:,:]), axis=0)
-
-            output_fin_np = output_fin.data.cpu().numpy()[:,0,:,:]
             output_all = np.concatenate((output_all, generate_CRF(img=input_var.data.cpu().numpy()[:,0,:,:],
                                                                   pred=output_fin.data.cpu().numpy()[:,0,:,:],
                                                                   iter=10, n_labels=2)), axis=0)
@@ -416,6 +456,34 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
         data_logger.image_summary(tag='validate/case:' + str(ind), images=dict_disp[ind], step=epoch)
 
     return mDSCv[0]
+
+
+def predict_unlabel(unlabel_loader, model):
+    # switch to evaluation mode and evaluate
+    model.eval()
+    for i, (input_name, input, input_raw) in enumerate(unlabel_loader):
+        input_var = torch.autograd.Variable(input, requires_grad=False).cuda()
+        input_raw_var = torch.autograd.Variable(input_raw, requires_grad=False).cuda()
+
+        # 1) output BOUNDARY, REGION, FINAL_REGION from models
+        _, _, output_fin = model(input_var)
+
+        # 4) store all the output, case_ind, gt on validation
+        if i == 0:
+            input_name_all = input_name
+            input_raw_all = input_raw_var.data.cpu().numpy()[:,0,:,:]
+            output_all = generate_CRF(img=input_var.data.cpu().numpy()[:,0,:,:], 
+                                      pred=output_fin.data.cpu().numpy()[:,0,:,:],
+                                      iter=10, n_labels=2)
+
+        else:
+            input_name_all = np.concatenate((input_name_all, input_name), axis=0)
+            input_raw_all = np.concatenate((input_raw_all, input_raw_var.data.cpu().numpy()[:,0,:,:]), axis=0)
+            output_all = np.concatenate((output_all, generate_CRF(img=input_var.data.cpu().numpy()[:,0,:,:],
+                                                                  pred=output_fin.data.cpu().numpy()[:,0,:,:],
+                                                                  iter=10, n_labels=2)), axis=0)
+
+    return input_name_all, input_raw_all, output_all
 
 
 def adjust_learning_rate(optimizer, epoch):
