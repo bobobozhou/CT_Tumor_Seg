@@ -213,7 +213,11 @@ def main():
     '''
     if STAGE2 is True:
         for i, dis_range in enumerate(dis_range_set):
+
+            print("Start semi-supervise training procedure")
+
             '''Predict the neighbourhood slice in distance range (Mask, Edge)'''
+            print("predicting unlabeled image in distance range #'{}'".format(i))
             # data loader for unlabeled image in certain distance range
             unlabel_dataset = CTTumorDataset_unlabel(image_data_dir=args.image_data_semi_dir,
                                                      list_file=args.unlabel_list_dir,
@@ -241,7 +245,10 @@ def main():
                 edge_save_dir = args.edge_data_semi_dir,
                 train_list_save_dir = args.train_semi_list_dir)
 
+            print("done")
+
             '''Data loading (CT Tumor Dataset): Training Data (orginal labeled + semi-labeled)'''
+            print("training using unlabeled image in distance range #'{}'".format(i))
             # 1) all semi-training data load
             train_dataset = CTTumorDataset(image_data_dir=args.image_data_semi_dir,
                                            mask_data_dir=args.mask_data_semi_dir,

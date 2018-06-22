@@ -1,4 +1,5 @@
-Data
+Data_RangeClassification
+Data_Segmentation
 Code/SiBANet/logs
 Code/SiBANet/models
 Code/SiBANet_DICE/logs
@@ -9,6 +10,12 @@ Code/SiBANet_DICE_v2/logs
 Code/SiBANet_DICE_v2/models
 Code/SiBANet_DICE_v3/logs
 Code/SiBANet_DICE_v3/models
+Code/SiBANet_DICE_v4/logs
+Code/SiBANet_DICE_v4/models
+Code/SEMI_SiBANet_DICE_v3/logs
+Code/SEMI_SiBANet_DICE_v3/models
+Code/Dual_DenseNet/logs
+Code/Dual_DenseNet/models
 Code/UNet/logs
 Code/UNet/models
 Code/UNet_DICE/logs

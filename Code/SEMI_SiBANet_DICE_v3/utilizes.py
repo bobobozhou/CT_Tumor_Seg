@@ -293,4 +293,5 @@ def save_unlabel(img_name_unlabel, img_raw_unlabel, mask_unlabel, img_save_dir, 
         f.write('0 ' + '0.00 ' + img_name_ind + ' ' + mask_name_ind + ' ' + edge_name_ind + ' 0 0 0 0 ' + '\r\n')
     
     f.close()
-    ipdb.set_trace()
+    
+    return
