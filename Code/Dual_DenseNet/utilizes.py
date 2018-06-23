@@ -3,6 +3,7 @@ from skimage.filters import threshold_otsu
 from scipy import ndimage
 import pydensecrf.densecrf as dcrf
 from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral, create_pairwise_gaussian
+from sklearn.metrics import roc_auc_score, average_precision_score
 import ipdb
 
 class AverageMeter(object):
@@ -21,6 +22,29 @@ class AverageMeter(object):
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+
+
+def metric_ROC(output, target):
+    """ Calculation of min Ap """
+    output_np = output.cpu().numpy()
+    target_np = target.cpu().numpy()
+
+    num_class = target.shape[1]
+    all_roc_auc = []
+    for cid in range(num_class):
+        gt_cls = target_np[:, cid].astype('float32')
+        pred_cls = output_np[:, cid].astype('float32')
+
+        if all(v == 0 for v in gt_cls):
+            roc_auc = float('nan')
+        else:
+            roc_auc = roc_auc_score(gt_cls, pred_cls, average='weighted')
+
+        all_roc_auc.append(roc_auc)
+
+    all_roc_auc = np.array(all_roc_auc)
+    mROC_AUC = all_roc_auc[~np.isnan(all_roc_auc)].mean()
+    return [mROC_AUC], [all_roc_auc]
 
 
 def metric_DSC_slice(output, target):
