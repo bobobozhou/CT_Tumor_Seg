@@ -67,12 +67,12 @@ for i = 3:4:length(files)
         if zz <= max_z && zz >= min_z
             line = char(strcat(string(ind_case), " ", string(dis_to_center), " ", ...
                 img_file_name, " ", img_mid_file_name, " ", mask_mid_file_name, " ", ...
-                " 1\n"));
+                " 1\r\n"));
             fprintf(fileID_train, line);
         else
             line = char(strcat(string(ind_case), " ", string(dis_to_center), " ", ...
                 img_file_name, " ", img_mid_file_name, " ", mask_mid_file_name, " ", ...
-                " 0\n"));
+                " 0\r\n"));
             fprintf(fileID_train, line);
         end
             

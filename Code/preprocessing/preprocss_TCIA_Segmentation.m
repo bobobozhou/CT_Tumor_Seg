@@ -9,9 +9,9 @@ clc
 % 2. Crop tumor bbox (<70pixels: 70x70 ; >70pixels: resample->70x70)
 
 %% load raw 3d data
-data_dir = '../../Data/public_data/Raw_DATA/3D';
+data_dir = '../../Data_Segmentation/public_data/Raw_DATA/3D_normalized';
 files = dir(data_dir);
-save_dir = '../../Data/public_data/';
+save_dir = '../../Data_Segmentation/public_data/';
 
 fileID_train = fopen(strcat(save_dir,'dir/','train_list.txt'),'wt');
 fileID_test = fopen(strcat(save_dir,'dir/','test_list.txt'),'wt');
@@ -83,14 +83,14 @@ for i = 3:4:length(files)
         line = char(strcat(string(ind_case), " ", string(dis_to_center), " ", img_file_name, " ", ...
                 mask_file_name, " ", ...
                 edge_file_name, ...
-                " 0 0 0 0 \n"));
+                " 0 0 0 0 \r\n"));
             fprintf(fileID_test, line);
         
         if zz == z_mid
             line = char(strcat(string(ind_case), " ", string(dis_to_center), " ", img_file_name, " ", ...
                 mask_file_name, " ", ...
                 edge_file_name, ...
-                " 0 0 0 0 \n"));
+                " 0 0 0 0 \r\n"));
             fprintf(fileID_train, line);
             
 %             figure(1),

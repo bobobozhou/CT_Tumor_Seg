@@ -61,18 +61,16 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 
 '''Set up Data Directory'''
-parser.add_argument('--image_data_dir', default='../../Data/merck_data/image', type=str, metavar='PATH',
+parser.add_argument('--image_data_dir', default='../../Data_Segmentation/merck_data/image', type=str, metavar='PATH',
                     help='path to image data')
-parser.add_argument('--mask_data_dir', default='../../Data/merck_data/mask', type=str, metavar='PATH',
+parser.add_argument('--mask_data_dir', default='../../Data_Segmentation/merck_data/mask', type=str, metavar='PATH',
                     help='path to mask data')
-parser.add_argument('--edge_data_dir', default='../../Data/merck_data/edge', type=str, metavar='PATH',
+parser.add_argument('--edge_data_dir', default='../../Data_Segmentation/merck_data/edge', type=str, metavar='PATH',
                     help='path to edge data')
 
-parser.add_argument('--train_list_dir', default='../../Data/merck_data/dir/train_list.txt', type=str, metavar='PATH',
+parser.add_argument('--train_list_dir', default='../../Data_Segmentation/merck_data/dir/train_list.txt', type=str, metavar='PATH',
                     help='path to train data list txt file')
-parser.add_argument('--val_list_dir', default='../../Data/merck_data/dir/val_list.txt', type=str, metavar='PATH',
-                    help='path to validation data list txt file')
-parser.add_argument('--test_list_dir', default='../../Data/merck_data/dir/test_list.txt', type=str, metavar='PATH',
+parser.add_argument('--test_list_dir', default='../../Data_Segmentation/merck_data/dir/test_list.txt', type=str, metavar='PATH',
                     help='path to test data list txt file')
 
 n_classes = 4
@@ -192,9 +190,6 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
     for i, (case_ind, input, mask, edge, class_vec) in enumerate(train_loader):
         input_var = torch.autograd.Variable(input, requires_grad=True).cuda()
         mask_var = torch.autograd.Variable(mask).type(torch.FloatTensor).cuda()
-        # edge_var = torch.autograd.Variable(edge).type(torch.LongTensor).cuda()
-        # class_vec = class_vec.type(torch.FloatTensor).cuda()
-        # class_vec_var = torch.autograd.Variable(class_vec)
 
         # 1) output FINAL_REGION from models
         output = model(input_var)
@@ -246,7 +241,6 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
     for i, (case_ind, input, mask, edge, class_vec) in enumerate(val_loader):
         input_var = torch.autograd.Variable(input, requires_grad=False).cuda()
         mask_var = torch.autograd.Variable(mask).type(torch.FloatTensor).cuda()
-        # edge_var = torch.autograd.Variable(edge).type(torch.LongTensor).cuda()
 
         # 1) output FINAL_REGION from models
         output = model(input_var)

@@ -9,9 +9,9 @@ clc
 % 2. Crop tumor bbox (<70pixels: 70x70 ; >70pixels: resample->70x70)
 
 %% load raw 3d data
-data_dir = '../../Data/merck_data/Raw_DATA/ALL/';
-xlsx = '../../Data/merck_data/Raw_DATA/training_tumor_info.xlsx';
-save_dir = '../../Data/merck_data/';
+data_dir = '../../Data_Segmentation/merck_data/Raw_DATA/ALL/';
+xlsx = '../../Data_Segmentation/merck_data/Raw_DATA/training_tumor_info.xlsx';
+save_dir = '../../Data_Segmentation/merck_data/';
 
 fileID_train = fopen(strcat(save_dir,'dir/','train_list.txt'),'wt');
 % fileID_test = fopen(strcat(save_dir,'dir/','test_list.txt'),'wt');
@@ -79,7 +79,7 @@ for i = 1:length(CT_list)
         line = char(strcat(string(0), " ", string(dis_to_center), " ", img_file_name, " ", ...
             mask_file_name, " ", ...
             edge_file_name, ...
-            " 0 0 0 0 \n"));
+            " 0 0 0 0 \r\n"));
         fprintf(fileID_train, line);
 
 %         figure(1),

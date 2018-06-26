@@ -31,13 +31,15 @@ for i = 3:4:length(files)
         size_org = size(V_ct);
         size_new = round(size_org .* ([0.75, 0.75, 1] ./ pixel_size_ct));
         [X,Y,Z] = meshgrid(1:size_org(1), 1:size_org(2), 1:size_org(3));
-        [Xq,Yq,Zq] = meshgrid(1:size_new(1), 1:size_new(2), 1:size_new(3));
+        [Xq,Yq,Zq] = meshgrid(linspace(1, size_org(1), size_new(1)), ...
+            linspace(1, size_org(2), size_new(2)), ...
+            linspace(1, size_org(3), size_new(3)));
         
-        V_ct_new = interp3(X, Y, Z, V_ct, Xq, Yq, Zq, 'cubic');
+        V_ct_new = interp3(X, Y, Z, V_ct, Xq, Yq, Zq, 'spline');
     
         vol_file_name = filename;
         vol_save = char(strcat(save_dir, '/', vol_file_name)); 
-        writeanalyze(int16(permute(vol_ct_new, [2 1 3])), size_new, vol_save, [0.75, 0.75, 1])
+        writeanalyze(int16(permute(V_ct_new, [2 1 3])), size_new, vol_save, [0.75, 0.75, 1])
         
     end
 
@@ -54,13 +56,15 @@ for i = 3:4:length(files)
         size_org = size(V_label);
         size_new = round(size_org .* ([0.75, 0.75, 1] ./ pixel_size_label));
         [X,Y,Z] = meshgrid(1:size_org(1), 1:size_org(2), 1:size_org(3));
-        [Xq,Yq,Zq] = meshgrid(1:size_new(1), 1:size_new(2), 1:size_new(3));
+        [Xq,Yq,Zq] = meshgrid(linspace(1, size_org(1), size_new(1)), ...
+            linspace(1, size_org(2), size_new(2)), ...
+            linspace(1, size_org(3), size_new(3)));
         
         V_label_new = interp3(X, Y, Z, V_label, Xq, Yq, Zq, 'nearest');
     
         vol_file_name = filename;
         vol_save = char(strcat(save_dir, '/', vol_file_name)); 
-        writeanalyze(uint8(permute(vol_label_new, [2 1 3])), size_new, vol_save, [0.75, 0.75, 1])
+        writeanalyze(uint8(permute(V_label_new, [2 1 3])), size_new, vol_save, [0.75, 0.75, 1])
         
     end
     

@@ -61,18 +61,16 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 
 '''Set up Data Directory'''
-parser.add_argument('--image_data_dir', default='../../Data/merck_data/image', type=str, metavar='PATH',
+parser.add_argument('--image_data_dir', default='../../Data_Segmentation/merck_data/image', type=str, metavar='PATH',
                     help='path to image data')
-parser.add_argument('--mask_data_dir', default='../../Data/merck_data/mask', type=str, metavar='PATH',
+parser.add_argument('--mask_data_dir', default='../../Data_Segmentation/merck_data/mask', type=str, metavar='PATH',
                     help='path to mask data')
-parser.add_argument('--edge_data_dir', default='../../Data/merck_data/edge', type=str, metavar='PATH',
+parser.add_argument('--edge_data_dir', default='../../Data_Segmentation/merck_data/edge', type=str, metavar='PATH',
                     help='path to edge data')
 
-parser.add_argument('--train_list_dir', default='../../Data/merck_data/dir/train_list.txt', type=str, metavar='PATH',
+parser.add_argument('--train_list_dir', default='../../Data_Segmentation/merck_data/dir/train_list.txt', type=str, metavar='PATH',
                     help='path to train data list txt file')
-parser.add_argument('--val_list_dir', default='../../Data/merck_data/dir/val_list.txt', type=str, metavar='PATH',
-                    help='path to validation data list txt file')
-parser.add_argument('--test_list_dir', default='../../Data/merck_data/dir/test_list.txt', type=str, metavar='PATH',
+parser.add_argument('--test_list_dir', default='../../Data_Segmentation/merck_data/dir/test_list.txt', type=str, metavar='PATH',
                     help='path to test data list txt file')
 
 n_classes = 4
@@ -165,7 +163,7 @@ def main():
         adjust_learning_rate(optimizer, epoch)
 
         # train for one epoch
-        # train(train_loader, model, criterion, optimizer, epoch, data_logger=data_logger, class_names=class_names)
+        train(train_loader, model, criterion, optimizer, epoch, data_logger=data_logger, class_names=class_names)
         
         # evaluate on validation set
         if epoch % args.ef == 0 or epoch == args.epochs:
