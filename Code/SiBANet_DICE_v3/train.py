@@ -163,7 +163,7 @@ def main():
         adjust_learning_rate(optimizer, epoch)
 
         # train for one epoch
-        train(train_loader, model, criterion, optimizer, epoch, data_logger=data_logger, class_names=class_names)
+        # train(train_loader, model, criterion, optimizer, epoch, data_logger=data_logger, class_names=class_names)
         
         # evaluate on validation set
         if epoch % args.ef == 0 or epoch == args.epochs:
