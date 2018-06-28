@@ -2,9 +2,29 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9362b302-b9bf-432a-b6b4-a9528caa16c9" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Code/Others/example_ProgCorr/test_ProgCorr.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/.ipynb_checkpoints/Non RGB Example-checkpoint.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/.ipynb_checkpoints/Untitled-checkpoint.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/.ipynb_checkpoints/Untitled1-checkpoint.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/Non RGB Example.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/Untitled.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/Untitled1.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/anno1-b.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/anno1.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/anno2.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/anno3.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/im1.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/im2.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/im3.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/inference.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/input_np.npy" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/out1-b.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/out1.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/out2.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/out3.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/output_np.npy" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Code/Others/examples/test.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Code/Dual_DenseNet/train.py" afterPath="$PROJECT_DIR$/Code/Dual_DenseNet/train.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Code/Dual_DenseNet/utilizes.py" afterPath="$PROJECT_DIR$/Code/Dual_DenseNet/utilizes.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -15,45 +35,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="data_loader.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Code/Dual_DenseNet/data_loader.py">
+      <file leaf-file-name="test_ProgCorr.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Code/Others/example_ProgCorr/test_ProgCorr.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1725">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="426">
+              <caret line="44" column="39" lean-forward="true" selection-start-line="44" selection-start-column="39" selection-end-line="45" selection-end-column="20" />
               <folding>
-                <element signature="e#0#12#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="model.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Code/Dual_DenseNet/model.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="435">
-              <caret line="152" column="37" lean-forward="true" selection-start-line="152" selection-start-column="37" selection-end-line="152" selection-end-column="37" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="train.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Code/Dual_DenseNet/train.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="979">
-              <caret line="290" column="62" lean-forward="true" selection-start-line="290" selection-start-column="62" selection-end-line="290" selection-end-column="62" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="utilizes.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/Code/Dual_DenseNet/utilizes.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="324">
-              <caret line="36" column="0" lean-forward="true" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#0#11#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -98,6 +86,7 @@
         <option value="$PROJECT_DIR$/Code/Dual_DenseNet/model.py" />
         <option value="$PROJECT_DIR$/Code/Dual_DenseNet/utilizes.py" />
         <option value="$PROJECT_DIR$/Code/Dual_DenseNet/train.py" />
+        <option value="$PROJECT_DIR$/Code/Others/example_ProgCorr/test_ProgCorr.py" />
       </list>
     </option>
   </component>
@@ -139,7 +128,20 @@
               <item name="CT_Tumor_Seg" type="b2602c69:ProjectViewProjectNode" />
               <item name="CT_Tumor_Seg" type="462c0819:PsiDirectoryNode" />
               <item name="Code" type="462c0819:PsiDirectoryNode" />
-              <item name="Dual_DenseNet" type="462c0819:PsiDirectoryNode" />
+              <item name="Others" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="CT_Tumor_Seg" type="b2602c69:ProjectViewProjectNode" />
+              <item name="CT_Tumor_Seg" type="462c0819:PsiDirectoryNode" />
+              <item name="Code" type="462c0819:PsiDirectoryNode" />
+              <item name="Others" type="462c0819:PsiDirectoryNode" />
+              <item name="example_ProgCorr" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="CT_Tumor_Seg" type="b2602c69:ProjectViewProjectNode" />
+              <item name="CT_Tumor_Seg" type="462c0819:PsiDirectoryNode" />
+              <item name="Code" type="462c0819:PsiDirectoryNode" />
+              <item name="SEMI_SiBANet_DICE_v3" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -164,7 +166,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.inference (1)">
+  <component name="RunManager" selected="Python.test_ProgCorr">
     <configuration name="inference (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -178,23 +180,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="CT_Tumor_Seg" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Code/OtherData/examples/inference.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-    </configuration>
-    <configuration name="inference" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Code/CRF/pydensecrf/examples" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="CT_Tumor_Seg" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Code/CRF/pydensecrf/examples/inference.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -233,6 +218,23 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
+    <configuration name="test_ProgCorr" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Code/Others/example_ProgCorr" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="CT_Tumor_Seg" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Code/Others/example_ProgCorr/test_ProgCorr.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+    </configuration>
     <configuration name="test_crf" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -251,19 +253,19 @@
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.inference" />
-      <item index="1" class="java.lang.String" itemvalue="Python.test" />
-      <item index="2" class="java.lang.String" itemvalue="Python.test (1)" />
-      <item index="3" class="java.lang.String" itemvalue="Python.inference (1)" />
-      <item index="4" class="java.lang.String" itemvalue="Python.test_crf" />
+      <item index="0" class="java.lang.String" itemvalue="Python.test" />
+      <item index="1" class="java.lang.String" itemvalue="Python.test (1)" />
+      <item index="2" class="java.lang.String" itemvalue="Python.inference (1)" />
+      <item index="3" class="java.lang.String" itemvalue="Python.test_crf" />
+      <item index="4" class="java.lang.String" itemvalue="Python.test_ProgCorr" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.inference (1)" />
-        <item index="1" class="java.lang.String" itemvalue="Python.test_crf" />
-        <item index="2" class="java.lang.String" itemvalue="Python.test (1)" />
-        <item index="3" class="java.lang.String" itemvalue="Python.test" />
-        <item index="4" class="java.lang.String" itemvalue="Python.inference" />
+        <item index="0" class="java.lang.String" itemvalue="Python.test_ProgCorr" />
+        <item index="1" class="java.lang.String" itemvalue="Python.inference (1)" />
+        <item index="2" class="java.lang.String" itemvalue="Python.test_crf" />
+        <item index="3" class="java.lang.String" itemvalue="Python.test (1)" />
+        <item index="4" class="java.lang.String" itemvalue="Python.test" />
       </list>
     </recent_temporary>
   </component>
@@ -296,14 +298,14 @@
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2039801" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32984293" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32984293" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32984293" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32984293" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36544502" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32946378" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -345,7 +347,7 @@
           <option name="timeStamp" value="54" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="55" />
+      <option name="time" value="63" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -456,13 +458,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Code/SEMI_SiBANet_DICE_v3/train.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="205" column="0" lean-forward="true" selection-start-line="205" selection-start-column="0" selection-end-line="205" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Code/SiBANet_DICE_v3/model.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-2430">
@@ -474,7 +469,7 @@
     <entry file="file://$PROJECT_DIR$/Code/Dual_DenseNet/model.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="435">
-          <caret line="152" column="37" lean-forward="true" selection-start-line="152" selection-start-column="37" selection-end-line="152" selection-end-column="37" />
+          <caret line="152" column="37" lean-forward="false" selection-start-line="152" selection-start-column="37" selection-end-line="152" selection-end-column="37" />
           <folding />
         </state>
       </provider>
@@ -484,7 +479,7 @@
         <state relative-caret-position="-1725">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#0#12#0" expanded="true" />
+            <element signature="e#0#12#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -492,7 +487,7 @@
     <entry file="file://$PROJECT_DIR$/Code/Dual_DenseNet/train.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="979">
-          <caret line="290" column="62" lean-forward="true" selection-start-line="290" selection-start-column="62" selection-end-line="290" selection-end-column="62" />
+          <caret line="290" column="62" lean-forward="false" selection-start-line="290" selection-start-column="62" selection-end-line="290" selection-end-column="62" />
           <folding />
         </state>
       </provider>
@@ -500,9 +495,29 @@
     <entry file="file://$PROJECT_DIR$/Code/Dual_DenseNet/utilizes.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="324">
-          <caret line="36" column="0" lean-forward="true" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
+          <caret line="36" column="0" lean-forward="false" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#0#18#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Code/SEMI_SiBANet_DICE_v3/train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="162">
+          <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="32" selection-end-column="20" />
+          <folding>
+            <element signature="e#129#144#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Code/Others/example_ProgCorr/test_ProgCorr.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="426">
+          <caret line="44" column="39" lean-forward="true" selection-start-line="44" selection-start-column="39" selection-end-line="45" selection-end-column="20" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
