@@ -154,6 +154,11 @@ def make_tf_disp_volume(input, output, target, ind_all):
         montage_gt = vol_to_montage(vol_gt)
         montage_output = vol_to_montage(vol_output)
 
+        np.save(str(i)+'input', vol_input)
+        np.save(str(i)+'gt', vol_gt)
+        np.save(str(i)+'output', vol_output)
+        ipdb.set_trace()
+
         montage_input = np.repeat(montage_input[np.newaxis, np.newaxis, :, :], 3, axis=1)
         montage_gt = np.repeat(montage_gt[np.newaxis, np.newaxis, :, :], 3, axis=1)
         montage_output = np.repeat(montage_output[np.newaxis, np.newaxis, :, :], 3, axis=1)
