@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import ipdb
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 from skimage.draw import ellipse
 from skimage.measure import label, regionprops
@@ -9,6 +9,7 @@ from skimage.transform import rotate
 from PIL import Image, ImageDraw
 from scipy.ndimage.morphology import binary_dilation, binary_erosion
 from scipy.misc import imsave
+
 
 def eliminate_region(image, ratio=0.1):
     # detect regions and labels
@@ -38,6 +39,7 @@ def eliminate_region(image, ratio=0.1):
         image_new = image
 
     return image_new
+
 
 def merge_region(image):
     # detect regions and labels
@@ -70,7 +72,8 @@ def merge_region(image):
 
     return image_new
 
-def correct_image_slice(img_pre, img_cur, Abot=0.7, Atop=1.2, Ctop=1):
+
+def correct_image_slice(img_pre, img_cur, Abot=0.2, Atop=1.3, Ctop=1):
     # detect regions and labels
     label_img_pre = label(img_pre)
     regions_pre = regionprops(label_img_pre)
@@ -83,8 +86,11 @@ def correct_image_slice(img_pre, img_cur, Abot=0.7, Atop=1.2, Ctop=1):
         raise ValueError("There should be only 1 binary region or no binary region in the image")
 
     # process and generate current slice based on last slice
-    if len(regions_cur) == 0:     # if empty, directly copy over
-        img_cur_new = binary_erosion(img_pre, iterations=1)
+    if len(regions_cur) == 0:    # if empty, directly copy over
+        if np.count_nonzero(binary_erosion(img_pre, iterations=1)) <= 20:
+            img_cur_new = img_pre
+        else:
+            img_cur_new = binary_erosion(img_pre, iterations=1)
 
     else:   # if not empty, determine whether to keep or replace           
         regions_pre = regions_pre[0]
@@ -102,13 +108,43 @@ def correct_image_slice(img_pre, img_cur, Abot=0.7, Atop=1.2, Ctop=1):
         if Abot <= A_ratio <= Atop and C_ratio <= Ctop:
             img_cur_new = img_cur
         else:
-            img_cur_new = binary_erosion(img_pre, iterations=1)
+            if np.count_nonzero(binary_erosion(img_pre, iterations=1)) <= 20:
+                img_cur_new = img_pre
+            else:
+                img_cur_new = binary_erosion(img_pre, iterations=1)
 
+    img_cur_new = eliminate_region(img_cur_new, ratio=0.1)
+    img_cur_new = merge_region(img_cur_new)
     return img_cur_new
+
+
+def vol_to_montage(vol):
+    n_slice, w_slice, h_slice = np.shape(vol)
+    nn = int(np.ceil(np.sqrt(n_slice)))
+    mm = nn
+    M = np.zeros((mm * h_slice, nn * w_slice))
+
+    image_id = 0
+    for j in range(mm):
+        for k in range(nn):
+            if image_id >= n_slice:
+                break
+            sliceM = j * w_slice
+            sliceN = k * h_slice
+            M[sliceN:sliceN + w_slice, sliceM:sliceM + h_slice] = vol[image_id, :, :]
+            image_id += 1
+
+    return M
+
 
 if __name__ == '__main__':
     # create simulated images
-    vol = np.array(np.load('8.npy'), dtype=np.float)
+    case = 17
+    file_input = os.path.join('npy', str(case) + 'input.npy')
+    file_gt = os.path.join('npy', str(case) + 'gt.npy')
+    file_output = os.path.join('npy', str(case) + 'output.npy')
+
+    vol = np.array(np.load(file_output), dtype=np.float)
     vol_new = vol.copy()
 
     # process middle slice
@@ -143,6 +179,34 @@ if __name__ == '__main__':
         img_cur_new = correct_image_slice(img_pre, img_cur)
         vol_new[i, :, :] = img_cur_new
 
-    # save
-    imsave(os.path.join('saved','img_org.jpg'), vol[2,:,:])
-    imsave(os.path.join('saved','img_new.jpg'), vol_new[2,:,:])
+    # visualize montage
+    vol_input = np.array(np.load(file_input), dtype=np.float)
+    vol_gt = np.array(np.load(file_gt), dtype=np.float)
+    montage_output_old = vol_to_montage(vol)
+    montage_output_new = vol_to_montage(vol_new)
+    montage_input = vol_to_montage(vol_input)
+    montage_gt = vol_to_montage(vol_gt)
+
+    fig = plt.figure()
+
+    ax1 = fig.add_subplot(141)
+    ax1.imshow(montage_input, cmap=plt.cm.gray)
+    ax1.set_title('input')
+
+    ax2 = fig.add_subplot(142)
+    ax2.imshow(montage_gt, cmap=plt.cm.gray)
+    ax2.set_title('gt')
+
+    ax3 = fig.add_subplot(143)
+    ax3.imshow(montage_output_old, cmap=plt.cm.gray)
+    ax3.set_title('output_old')
+
+    ax4 = fig.add_subplot(144)
+    ax4.imshow(montage_output_new, cmap=plt.cm.gray)
+    ax4.set_title('output_new')
+
+    plt.show()
+
+    # # save
+    # imsave(os.path.join('saved','img_org.jpg'), vol[2,:,:])
+    # imsave(os.path.join('saved','img_new.jpg'), vol_new[2,:,:])
