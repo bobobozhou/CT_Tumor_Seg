@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import ipdb
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from skimage.draw import ellipse
 from skimage.measure import label, regionprops
@@ -118,6 +118,53 @@ def correct_image_slice(img_pre, img_cur, Abot=0.2, Atop=1.3, Ctop=1):
     return img_cur_new
 
 
+def correct_pred_vol(vol, ratio=0.1):
+    '''
+    vol: the predicted segmentation volume from the model
+    ratio: ratio threshold for eliminating small regions
+    '''
+
+    vol_new = vol.copy()
+
+    try:
+        # process middle slice
+        ind_mid = int(vol.shape[0] / 2)
+        img_mid = vol[ind_mid, :, :]
+        img_mid = eliminate_region(img_mid, ratio=0.1)
+        img_mid = merge_region(img_mid)
+        vol_new[ind_mid, :, :] = img_mid
+
+        # go upper and process
+        upper_list = range(ind_mid + 1, vol.shape[0])
+        for i in upper_list:
+            print i
+            img_cur = vol[i, :, :]
+            img_cur = eliminate_region(img_cur, ratio=0.1)
+            img_cur = merge_region(img_cur)
+
+            img_pre = vol_new[i - 1, :, :]
+
+            img_cur_new = correct_image_slice(img_pre, img_cur)
+            vol_new[i, :, :] = img_cur_new
+
+        # go bottom and process
+        bottom_list = list(reversed(range(0, ind_mid)))
+        for i in bottom_list:
+            print i
+            img_cur = vol[i, :, :]
+            img_cur = eliminate_region(img_cur, ratio=0.1)
+            img_cur = merge_region(img_cur)
+
+            img_pre = vol_new[i + 1, :, :]
+            img_cur_new = correct_image_slice(img_pre, img_cur)
+            vol_new[i, :, :] = img_cur_new
+
+        return vol_new
+
+    except:
+        return vol_new
+
+
 def vol_to_montage(vol):
     n_slice, w_slice, h_slice = np.shape(vol)
     nn = int(np.ceil(np.sqrt(n_slice)))
@@ -139,45 +186,13 @@ def vol_to_montage(vol):
 
 if __name__ == '__main__':
     # create simulated images
-    case = 17
+    case = 129
     file_input = os.path.join('npy', str(case) + 'input.npy')
     file_gt = os.path.join('npy', str(case) + 'gt.npy')
     file_output = os.path.join('npy', str(case) + 'output.npy')
 
     vol = np.array(np.load(file_output), dtype=np.float)
-    vol_new = vol.copy()
-
-    # process middle slice
-    ind_mid = int(vol.shape[0] / 2)
-    img_mid = vol[ind_mid, :, :]
-    img_mid = eliminate_region(img_mid, ratio=0.1)
-    img_mid = merge_region(img_mid)
-    vol_new[ind_mid, :, :] = img_mid
-
-    # go upper and process
-    upper_list = range(ind_mid + 1, vol.shape[0])
-    for i in upper_list:
-        print i
-        img_cur = vol[i, :, :]
-        img_cur = eliminate_region(img_cur, ratio=0.1)
-        img_cur = merge_region(img_cur)
-
-        img_pre = vol_new[i - 1, :, :]
-
-        img_cur_new = correct_image_slice(img_pre, img_cur)
-        vol_new[i, :, :] = img_cur_new
-
-    # go bottom and process
-    bottom_list = list(reversed(range(0, ind_mid)))
-    for i in bottom_list:
-        print i
-        img_cur = vol[i, :, :]
-        img_cur = eliminate_region(img_cur, ratio=0.1)
-        img_cur = merge_region(img_cur)
-
-        img_pre = vol_new[i + 1, :, :]
-        img_cur_new = correct_image_slice(img_pre, img_cur)
-        vol_new[i, :, :] = img_cur_new
+    vol_new = correct_pred_vol(vol, ratio=0.1)
 
     # visualize montage
     vol_input = np.array(np.load(file_input), dtype=np.float)
@@ -187,26 +202,29 @@ if __name__ == '__main__':
     montage_input = vol_to_montage(vol_input)
     montage_gt = vol_to_montage(vol_gt)
 
-    fig = plt.figure()
+    # save
+    imsave(os.path.join('saved','montage_gt.jpg'), montage_gt)
+    imsave(os.path.join('saved','montage_input.jpg'), montage_input)
+    imsave(os.path.join('saved','montage_output_old.jpg'), montage_output_new)
+    imsave(os.path.join('saved','montage_output_new.jpg'), montage_output_new)
 
-    ax1 = fig.add_subplot(141)
-    ax1.imshow(montage_input, cmap=plt.cm.gray)
-    ax1.set_title('input')
+    # # visualize results
+    # fig = plt.figure()
 
-    ax2 = fig.add_subplot(142)
-    ax2.imshow(montage_gt, cmap=plt.cm.gray)
-    ax2.set_title('gt')
+    # ax1 = fig.add_subplot(141)
+    # ax1.imshow(montage_input, cmap=plt.cm.gray)
+    # ax1.set_title('input')
 
-    ax3 = fig.add_subplot(143)
-    ax3.imshow(montage_output_old, cmap=plt.cm.gray)
-    ax3.set_title('output_old')
+    # ax2 = fig.add_subplot(142)
+    # ax2.imshow(montage_gt, cmap=plt.cm.gray)
+    # ax2.set_title('gt')
 
-    ax4 = fig.add_subplot(144)
-    ax4.imshow(montage_output_new, cmap=plt.cm.gray)
-    ax4.set_title('output_new')
+    # ax3 = fig.add_subplot(143)
+    # ax3.imshow(montage_output_old, cmap=plt.cm.gray)
+    # ax3.set_title('output_old')
 
-    plt.show()
+    # ax4 = fig.add_subplot(144)
+    # ax4.imshow(montage_output_new, cmap=plt.cm.gray)
+    # ax4.set_title('output_new')
 
-    # # save
-    # imsave(os.path.join('saved','img_org.jpg'), vol[2,:,:])
-    # imsave(os.path.join('saved','img_new.jpg'), vol_new[2,:,:])
+    # plt.show()

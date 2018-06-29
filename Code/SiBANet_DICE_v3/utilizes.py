@@ -1,5 +1,9 @@
 import numpy as np
 from skimage.filters import threshold_otsu
+from skimage.draw import ellipse
+from skimage.measure import label, regionprops
+from PIL import Image, ImageDraw
+from scipy.ndimage.morphology import binary_dilation, binary_erosion
 from scipy import ndimage
 import pydensecrf.densecrf as dcrf
 from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral, create_pairwise_gaussian
@@ -50,6 +54,7 @@ def metric_DSC_volume(output, target, ind_all):
         
         vol_output_prob = output[np.where(ind_all == i)[0], :, :]
         vol_output = prob_to_segment(vol_output_prob)
+        vol_output = correct_pred_vol(vol_output, ratio=0.1)
 
         dice = DICE(vol_output, vol_gt, empty_score=1.0)
         all_DSC_volume.append(dice)
@@ -149,15 +154,17 @@ def make_tf_disp_volume(input, output, target, ind_all):
         vol_gt = target[np.where(ind_all == i)[0], :, :]
         vol_output_prob = output[np.where(ind_all == i)[0], :, :]
         vol_output = prob_to_segment(vol_output_prob)
+        vol_output = correct_pred_vol(vol_output, ratio=0.1)
 
         montage_input = vol_to_montage(vol_input)
         montage_gt = vol_to_montage(vol_gt)
         montage_output = vol_to_montage(vol_output)
 
-        np.save(str(i)+'input', vol_input)
-        np.save(str(i)+'gt', vol_gt)
-        np.save(str(i)+'output', vol_output)
-        ipdb.set_trace()
+        # if i == 129:
+        #     np.save(str(i)+'input', vol_input)
+        #     np.save(str(i)+'gt', vol_gt)
+        #     np.save(str(i)+'output', vol_output)
+        #     ipdb.set_trace()
 
         montage_input = np.repeat(montage_input[np.newaxis, np.newaxis, :, :], 3, axis=1)
         montage_gt = np.repeat(montage_gt[np.newaxis, np.newaxis, :, :], 3, axis=1)
@@ -168,7 +175,7 @@ def make_tf_disp_volume(input, output, target, ind_all):
 
     return dict
 
-
+"""threshold slice or volume to binary as segmentation"""
 def prob_to_segment(prob):
     """
     threshold the predicted segmentation image (a probablity image/volume)
@@ -184,7 +191,7 @@ def prob_to_segment(prob):
 
     return seg
 
-
+""" Make Montage display for volumetric data """
 def vol_to_montage(vol):
     n_slice, w_slice, h_slice = np.shape(vol)
     nn = int(np.ceil(np.sqrt(n_slice)))
@@ -203,7 +210,7 @@ def vol_to_montage(vol):
 
     return M
 
-
+""" Fully-connected Conditional Random Field for refine the segmentation results """
 def generate_CRF(img, pred, iter=20, n_labels=2):
     '''
     INPUT
@@ -223,7 +230,6 @@ def generate_CRF(img, pred, iter=20, n_labels=2):
         img_ind = img[i, :, :][:, :, np.newaxis]
         pred_ind = np.tile(pred[i, :, :][np.newaxis, :, :], (2, 1, 1))
         pred_ind[1, :, :] = 1 - pred_ind[0, :, :]
-        # ipdb.set_trace()
 
         # setup the dense conditional random field for segmentation
         d = dcrf.DenseCRF2D(img_ind.shape[1], img_ind.shape[0], n_labels)
@@ -255,3 +261,158 @@ def generate_CRF(img, pred, iter=20, n_labels=2):
             map_all = np.concatenate((map_all, map_crf[np.newaxis, :, :]), axis=0)
 
     return map_all
+
+""" Correction of volume slices progressively starting from the middle slice """
+def eliminate_region(image, ratio=0.1):
+    # detect regions and labels
+    label_img = label(image)
+    regions = regionprops(label_img)
+
+    # run eliminate process only if there is more than one region
+    if len(regions) > 1:
+        areas = []
+        labs = []
+        for i, props in enumerate(regions):
+            area = props.area
+            areas.append(area)
+
+            lab = np.zeros(props._label_image.shape)
+            lab[props._label_image == i+1] = 1
+            labs.append(lab)
+
+        ratios = np.array(areas, dtype=np.float) / max(areas)
+        index = np.where(ratios > ratio)[0]
+        labs_new = [labs[i]  for i in index]
+        labs_new = np.array(labs_new)
+
+        image_new = np.sum(labs_new, axis=0)
+
+    else:
+        image_new = image
+
+    return image_new
+
+
+def merge_region(image):
+    # detect regions and labels
+    label_img = label(image)
+    regions = regionprops(label_img)
+
+    # create connection mask, if there is more than 2 regions
+    img_conn = Image.new('L', (image.shape[0], image.shape[1]), 0)
+
+    if len(regions) > 1:
+        polygon_pts = []
+        area_min = float("inf")
+        for props in regions:
+            y0, x0 = props.centroid
+            polygon_pts.append((x0, y0))
+
+            # store the structure element for dilation
+            if props.area < area_min:
+                area_min = props.area
+                se = props.convex_image
+
+        ImageDraw.Draw(img_conn).polygon(polygon_pts, outline=1, fill=1)
+        img_conn = np.array(img_conn)
+        img_conn = binary_dilation(img_conn, structure=se)
+
+        image_new = np.array(np.logical_or(image, img_conn), dtype=np.float)
+
+    else:
+        image_new = image
+
+    return image_new
+
+
+def correct_image_slice(img_pre, img_cur, Abot=0.2, Atop=1.3, Ctop=1):
+    # detect regions and labels
+    label_img_pre = label(img_pre)
+    regions_pre = regionprops(label_img_pre)
+
+    label_img_cur = label(img_cur)
+    regions_cur = regionprops(label_img_cur)
+
+    # check if there is more than 1 region
+    if len(regions_pre) > 1 or len(regions_cur) > 1:
+        raise ValueError("There should be only 1 binary region or no binary region in the image")
+
+    if len(regions_pre) == 0:
+        raise ValueError("previous image shouldn't be empty")
+
+    # process and generate current slice based on last slice
+    if len(regions_cur) == 0:    # if empty, directly copy over
+        if np.count_nonzero(binary_erosion(img_pre, iterations=1)) <= 20:
+            img_cur_new = img_pre
+        else:
+            img_cur_new = binary_erosion(img_pre, iterations=1)
+
+    else:   # if not empty, determine whether to keep or replace           
+        regions_pre = regions_pre[0]
+        regions_cur = regions_cur[0]
+
+        # check 1) area ratio ; 2) centroid location
+        A_ratio = float(regions_cur.area) / float(regions_pre.area)
+
+        x_cur, y_cur = regions_cur.centroid
+        x_pre, y_pre = regions_pre.centroid
+        C_dis = ((x_cur - x_pre)**2 + (y_cur - y_pre)**2)**(1.0/2.0)  # center distance
+        S_pre = (regions_pre.major_axis_length + regions_pre.minor_axis_length) / 2.0 / 2.0  # radius of the pre region 
+        C_ratio = C_dis / S_pre
+
+        if Abot <= A_ratio <= Atop and C_ratio <= Ctop:
+            img_cur_new = img_cur
+        else:
+            if np.count_nonzero(binary_erosion(img_pre, iterations=1)) <= 20:
+                img_cur_new = img_pre
+            else:
+                img_cur_new = binary_erosion(img_pre, iterations=1)
+
+    img_cur_new = eliminate_region(img_cur_new, ratio=0.1)
+    img_cur_new = merge_region(img_cur_new)
+    return img_cur_new
+
+
+def correct_pred_vol(vol, ratio=0.1):
+    '''
+    vol: the predicted segmentation volume from the model
+    ratio: ratio threshold for eliminating small regions
+    '''
+
+    vol_new = vol.copy()
+
+    try:
+        # process middle slice
+        ind_mid = int(vol.shape[0] / 2)
+        img_mid = vol[ind_mid, :, :]
+        img_mid = eliminate_region(img_mid, ratio=0.1)
+        img_mid = merge_region(img_mid)
+        vol_new[ind_mid, :, :] = img_mid
+
+        # go upper and process
+        upper_list = range(ind_mid + 1, vol.shape[0])
+        for i in upper_list:
+            img_cur = vol[i, :, :]
+            img_cur = eliminate_region(img_cur, ratio=0.1)
+            img_cur = merge_region(img_cur)
+
+            img_pre = vol_new[i - 1, :, :]
+
+            img_cur_new = correct_image_slice(img_pre, img_cur)
+            vol_new[i, :, :] = img_cur_new
+
+        # go bottom and process
+        bottom_list = list(reversed(range(0, ind_mid)))
+        for i in bottom_list:
+            img_cur = vol[i, :, :]
+            img_cur = eliminate_region(img_cur, ratio=0.1)
+            img_cur = merge_region(img_cur)
+
+            img_pre = vol_new[i + 1, :, :]
+            img_cur_new = correct_image_slice(img_pre, img_cur)
+            vol_new[i, :, :] = img_cur_new
+
+        return vol_new
+
+    except:
+        return vol_new

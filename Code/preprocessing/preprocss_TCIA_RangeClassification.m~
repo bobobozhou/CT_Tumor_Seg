@@ -117,8 +117,8 @@ fileID_test = fopen(strcat(save_dir,'dir/','test_list.txt'),'wt');
 ind_test = ind(round(0.8 * length(all)):length(all));
 test_list = all(ind_test);
 for i = 1:length(test_list)
-    line = char(strcat(test_list(i), "\r\n"));
-    fprintf(fileID_test, line);
+    line = char(strcat(train_list(i), "\r\n"));
+    fprintf(fileID_train, line);
 end
 
 fclose(fileID_test);

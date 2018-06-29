@@ -42,7 +42,7 @@ parser.add_argument('--epochs', default=1000000, type=int, metavar='N',
                     help='number of epochs for training network')
 parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('--batch_size', default=16, type=int, metavar='N',
+parser.add_argument('--batch_size', default=8, type=int, metavar='N',
                     help='mini-batch size for training (default: 64)')
 parser.add_argument('--lr', default=0.0001, type=float, metavar='LR',
                     help='initial learning rate')
@@ -227,7 +227,9 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None):
             mask_mid_disp = np.repeat(input_cond_var.data.cpu().numpy()[0, 2, :, :][np.newaxis, np.newaxis, :, :], 3, axis=1)
             
             tag_inf = '_epoch:' + str(epoch) + ' _iter:' + str(i)
-            data_logger.image_summary(tag='train/' + tag_inf + '-0image' + '__gt:' + class_vec_var.data.cpu().numpy()[0] + '___pred:' + output.data.cpu().numpy()[0],
+            data_logger.image_summary(tag='train/' + tag_inf + '-0image' + 
+            						  '__gt:' + str(class_vec_var.data.cpu().numpy()[0][0]) + 
+            						  '___pred:' + str(output.data.cpu().numpy()[0][0]),
                                       images=image_disp, step=i + len(train_loader) * epoch)
             data_logger.image_summary(tag='train/' + tag_inf + '-1image_mid',
                                       images=image_mid_disp, step=i + len(train_loader) * epoch)
