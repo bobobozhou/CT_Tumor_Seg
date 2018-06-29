@@ -271,7 +271,9 @@ def validate(val_loader, model, criterion, epoch, data_logger=None):
                                       axis=1)
 
             tag_inf = '_epoch:' + str(epoch) + ' _iter:' + str(i)
-            data_logger.image_summary(tag='train/' + tag_inf + '-0image' + '__gt:' + class_vec_var.data.cpu().numpy()[0] + '___pred:' + output.data.cpu().numpy()[0],
+            data_logger.image_summary(tag='train/' + tag_inf + '-0image' + 
+            						  '__gt:' + str(class_vec_var.data.cpu().numpy()[0][0]) + 
+            						  '___pred:' + str(output.data.cpu().numpy()[0][0]),
                                       images=image_disp, step=i + len(val_loader) * epoch)
             data_logger.image_summary(tag='train/' + tag_inf + '-1image_mid',
                                       images=image_mid_disp, step=i + len(val_loader) * epoch)
