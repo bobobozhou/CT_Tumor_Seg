@@ -54,7 +54,7 @@ def metric_DSC_volume(output, target, ind_all):
         
         vol_output_prob = output[np.where(ind_all == i)[0], :, :]
         vol_output = prob_to_segment(vol_output_prob)
-        vol_output = correct_pred_vol(vol_output, ratio=0.1)
+        # vol_output = correct_pred_vol(vol_output, ratio=0.1)
 
         dice = DICE(vol_output, vol_gt, empty_score=1.0)
         all_DSC_volume.append(dice)
@@ -154,7 +154,7 @@ def make_tf_disp_volume(input, output, target, ind_all):
         vol_gt = target[np.where(ind_all == i)[0], :, :]
         vol_output_prob = output[np.where(ind_all == i)[0], :, :]
         vol_output = prob_to_segment(vol_output_prob)
-        vol_output = correct_pred_vol(vol_output, ratio=0.1)
+        # vol_output = correct_pred_vol(vol_output, ratio=0.1)
 
         montage_input = vol_to_montage(vol_input)
         montage_gt = vol_to_montage(vol_gt)

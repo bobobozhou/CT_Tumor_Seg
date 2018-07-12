@@ -42,7 +42,7 @@ parser.add_argument('--epochs', default=1000000, type=int, metavar='N',
                     help='number of epochs for training network')
 parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('--batch_size', default=8, type=int, metavar='N',
+parser.add_argument('--batch_size', default=24, type=int, metavar='N',
                     help='mini-batch size for training (default: 64)')
 parser.add_argument('--lr', default=0.0001, type=float, metavar='LR',
                     help='initial learning rate')
@@ -54,7 +54,7 @@ parser.add_argument('--pf', default=1, type=int, metavar='N',
                     help='training print frequency (default: 10)')
 parser.add_argument('--df', default=2, type=int, metavar='N',
                     help='training display image frequency (default: 10)')
-parser.add_argument('--ef', default=10, type=int, metavar='N',
+parser.add_argument('--ef', default=1, type=int, metavar='N',
                     help='evaluate print frequency (default: 2)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
@@ -300,7 +300,7 @@ def validate(val_loader, model, criterion, epoch, data_logger=None):
           'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
           'Metric_ROCAUC {mROCAUC:.3f} ({mROCAUC:.3f})\t'.format(epoch,
                                                                  loss=losses,
-                                                                 mROCAUC=mROCAUC))
+                                                                 mROCAUC=mROCAUC[0]))
 
     # Plot the training loss, loss_ba, loss_rg, loss_fin, metric_DSC_slice
     data_logger.scalar_summary(tag='validate/loss', value=losses.avg, step=epoch)

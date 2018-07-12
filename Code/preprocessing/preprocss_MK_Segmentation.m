@@ -14,7 +14,6 @@ xlsx = '../../Data_Segmentation/merck_data/Raw_DATA/training_tumor_info.xlsx';
 save_dir = '../../Data_Segmentation/merck_data/';
 
 fileID_train = fopen(strcat(save_dir,'dir/','train_list.txt'),'wt');
-% fileID_test = fopen(strcat(save_dir,'dir/','test_list.txt'),'wt');
 
 [num, txt, raw] = xlsread(xlsx);
 CT_list = raw(:,1);
@@ -49,8 +48,9 @@ for i = 1:length(CT_list)
             y_start = max(1, min_y - (70 - y_size)/2); y_end = min(512, max_y + (70 - y_size)/2); 
 
         else     % if tumor>60x60, crop the original size add 15% width
-            x_start = max(1, round(min(x) - 0.15 * x_size)); x_end = min(512, round(max(x) + 0.15 * x_size));
-            y_start = max(1, round(min(y) - 0.15 * y_size)); y_end = min(512, round(max(y) + 0.15 * y_size));    
+            l = max(x_size, y_size);
+            x_start = max(1, round(min_x - 0.15 * l)); x_end = min(512, round(max_x + 0.15 * l));
+            y_start = max(1, round(min_y - 0.15 * l)); y_end = min(512, round(max_y + 0.15 * l));    
 
         end
 
@@ -63,9 +63,9 @@ for i = 1:length(CT_list)
         name_main = name_label(1:strfind(name_label, '_label.png')-1);
         name_main = name_main(~isspace(name_main));
         
-        img_file_name = strcat(name_main, '_tumor', '_img', '.png');
-        mask_file_name = strcat(name_main, '_tumor', '_mask', '.png');
-        edge_file_name = strcat(name_main, '_tumor', '_edge', '.png');
+        img_file_name = strcat(name_main, '_tumor', '_img_train_', '.png');
+        mask_file_name = strcat(name_main, '_tumor', '_mask_train_', '.png');
+        edge_file_name = strcat(name_main, '_tumor', '_edge_train_', '.png');
 
         img_save = char(strcat(save_dir, 'image/', img_file_name));
         imwrite(img_patch_tumor, img_save);
@@ -140,6 +140,5 @@ for i = 1:length(CT_list)
 end
 
 fclose(fileID_train);
-% fclose(fileID_test);
 
 

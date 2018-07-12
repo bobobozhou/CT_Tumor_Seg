@@ -26,8 +26,8 @@ class AverageMeter(object):
 
 def metric_ROC(output, target):
     """ Calculation of min Ap """
-    output_np = output.cpu().numpy()
-    target_np = target.cpu().numpy()
+    output_np = output
+    target_np = target
 
     num_class = target.shape[1]
     all_roc_auc = []
