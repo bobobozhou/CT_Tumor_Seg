@@ -7,6 +7,7 @@ from scipy.ndimage.morphology import binary_dilation, binary_erosion
 from scipy import ndimage
 import pydensecrf.densecrf as dcrf
 from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral, create_pairwise_gaussian
+import cv2
 import ipdb
 
 class AverageMeter(object):
@@ -159,12 +160,6 @@ def make_tf_disp_volume(input, output, target, ind_all):
         montage_input = vol_to_montage(vol_input)
         montage_gt = vol_to_montage(vol_gt)
         montage_output = vol_to_montage(vol_output)
-
-        # if i == 129:
-        #     np.save(str(i)+'input', vol_input)
-        #     np.save(str(i)+'gt', vol_gt)
-        #     np.save(str(i)+'output', vol_output)
-        #     ipdb.set_trace()
 
         montage_input = np.repeat(montage_input[np.newaxis, np.newaxis, :, :], 3, axis=1)
         montage_gt = np.repeat(montage_gt[np.newaxis, np.newaxis, :, :], 3, axis=1)
@@ -416,3 +411,87 @@ def correct_pred_vol(vol, ratio=0.1):
 
     except:
         return vol_new
+
+
+""" Save segmentation results for paper"""
+def save_seg_montage(input, output, target, ind_all):
+    """
+    make the Montage for saving the slice + segmentation contour results
+    Parameters
+    ----------
+    output: array-like
+        Any array of arbitrary size from the model prediction with case-index.
+    targte:  
+        Any array of arbitrary size (ground truth segmentation) with case-index
+        * Need to be same size as output
+    """
+
+    if output.shape != target.shape:
+        raise ValueError("Shape mismatch: Image & Prediction & Ground-Truth must have the same shape!")
+
+    for i in range(ind_all.min(), ind_all.max() + 1):
+        vol_input = input[np.where(ind_all == i)[0], :, :]
+        vol_gt = target[np.where(ind_all == i)[0], :, :]
+        vol_output_prob = output[np.where(ind_all == i)[0], :, :]
+        vol_output = prob_to_segment(vol_output_prob)
+
+        vol_input = vol_input.transpose(1, 2, 0)
+        vol_gt = vol_gt.transpose(1, 2, 0)
+        vol_output = vol_output.transpose(1, 2, 0)
+
+        plot_data_3d(vol_input, vol_output, vol_gt, savepath='./_RESULTS/' + str(i) + '.png')
+
+    return 
+
+
+def plot_data_3d(vol_input, vol_output, vol_gt, savepath):
+    """
+    Generate an image for 3D data.
+    1) show the corresponding 2D slices.
+    """
+
+    # Draw
+    slides = plot_slides(vol_input, vol_output, vol_gt)
+
+    # Save
+    cv2.imwrite(savepath, slides)
+
+
+def plot_slides(vol_input, vol_output, vol_gt, _range=None, colored=False):
+    """Plot the 2D slides of 3D data"""
+    v = vol_input
+    vol_output = vol_output.astype(np.uint8)
+    vol_gt = vol_gt.astype(np.uint8)
+
+    # Rescale the value of voxels into [0, 255], as unsigned byte
+    if _range == None:
+        v_n = v / (np.max(np.abs(v)) + 0.0000001)
+        v_n = (128 + v_n * 127).astype(np.uint8)
+
+    else:
+        v_n = (v - _range[0]) / (_range[1] - _range[0])
+        v_n = (v_n * 255).astype(np.uint8)
+
+    # Plot the slides
+    h, w, d = v.shape
+    side_w = int(np.ceil(np.sqrt(d)))
+    side_h = int(np.ceil(float(d) / side_w))
+
+    board = np.zeros(((h + 1) * side_h, (w + 1) * side_w, 3))
+    for i in range(side_h):
+        for j in range(side_w):
+            if i * side_w + j >= d:
+                break
+
+            img = v_n[:, :, i * side_w + j]
+            img = np.repeat(img[:,:,np.newaxis], 3, axis=2)
+
+            contours_pred, _ = cv2.findContours(vol_output[:, :, i * side_w + j].copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            contours_gt, _ = cv2.findContours(vol_gt[:, :, i * side_w + j].copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(img, contours_pred, -1, (0, 200, 0), 1)
+            cv2.drawContours(img, contours_gt, -1, (0, 0, 200), 1)
+
+            board[(h + 1) * i + 1: (h + 1) * (i + 1), (w + 1) * j + 1: (w + 1) * (j + 1), :] = img
+
+    # Return a 2D array representing the image pixels
+    return board.astype(int)

@@ -3,7 +3,7 @@ function [ min_z, max_z ] = middle_cut(z)
 %   Detailed explanation goes here
 
 [N, edges] = histcounts(z);
-inds = round(edges(N > 20));
+inds = round(edges(N > 35));
 
 max_z = max(inds);
 min_z = min(inds);

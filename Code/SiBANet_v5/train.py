@@ -58,7 +58,7 @@ parser.add_argument('--df', default=15, type=int, metavar='N',
 parser.add_argument('--ef', default=80, type=int, metavar='N',
                     help='evaluate print frequency (default: 2)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
-                    help='path to latest checkpoint (default: none)')
+                    help='path to latest checkpoint (default: none)')  # --resume=models/SiBANet/model_best_SiBANet.pth.tar
 
 '''Set up Data Directory'''
 parser.add_argument('--image_data_dir', default='../../Data_Segmentation/merck_data/image', type=str, metavar='PATH',
@@ -68,7 +68,7 @@ parser.add_argument('--mask_data_dir', default='../../Data_Segmentation/merck_da
 parser.add_argument('--edge_data_dir', default='../../Data_Segmentation/merck_data/edge', type=str, metavar='PATH',
                     help='path to edge data')
 
-parser.add_argument('--train_list_dir', default='../../Data_Segmentation/merck_data/dir/train_list.txt', type=str, metavar='PATH',
+parser.add_argument('--train_list_dir', default='../../Data_Segmentation/merck_data/dir/train_all_list.txt', type=str, metavar='PATH',
                     help='path to train data list txt file')
 parser.add_argument('--test_list_dir', default='../../Data_Segmentation/merck_data/dir/test_list.txt', type=str, metavar='PATH',
                     help='path to test data list txt file')
@@ -186,7 +186,7 @@ def main():
     ''' Validation'''
     TEST_STATUS=True
     if TEST_STATUS is True:
-        m = validate(val_loader, model, criterion, epoch, data_logger=data_logger, class_names=class_names)
+        m = validate(val_loader, model, criterion, epoch=args.start_epoch, data_logger=data_logger, class_names=class_names)
 
 
 def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, class_names=None):
@@ -371,6 +371,9 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
     
     for _, ind in enumerate(dict_disp):
         data_logger.image_summary(tag='validate/case:' + str(ind), images=dict_disp[ind], step=epoch)
+
+    # *Save Montage: Segmentation Contours on CT slices
+    save_seg_montage(input_all, output_all, mask_all, case_ind_all) 
 
     return mDSCv[0]
 
