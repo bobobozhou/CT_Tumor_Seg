@@ -17,7 +17,7 @@ import math
 import ipdb
 
 
-""" Scale-invariant Boundary Aware Net (SiBA-Net) """
+""" Scale-invariant Boundary Aware Net (SiBA-Net - DICE Version) """
 
 
 class SiBANET(nn.Module):
@@ -31,130 +31,174 @@ class SiBANET(nn.Module):
         '''
         Pre-trained VGG weights - 1st block
         '''        
-
-        self.w1_1 = Parameter(state_dict_pretrain['features.0.weight'], requires_grad=True)  # weight64_1
-        self.b1_1 = Parameter(state_dict_pretrain['features.0.bias'], requires_grad=True)     # bias64_1
-        self.w1_2 = Parameter(state_dict_pretrain['features.2.weight'], requires_grad=True)   # weight64_2
-        self.b1_2 = Parameter(state_dict_pretrain['features.2.bias'], requires_grad=True)     # bias64_2
+        self.w1_1_ba = Parameter(state_dict_pretrain['features.0.weight'], requires_grad=True)  # weight64_1
+        self.b1_1_ba = Parameter(state_dict_pretrain['features.0.bias'], requires_grad=True)     # bias64_1
+        self.w1_2_ba = Parameter(state_dict_pretrain['features.2.weight'], requires_grad=True)   # weight64_2
+        self.b1_2_ba = Parameter(state_dict_pretrain['features.2.bias'], requires_grad=True)     # bias64_2
+        self.w1_1_rg = Parameter(state_dict_pretrain['features.0.weight'], requires_grad=True)  # weight64_1
+        self.b1_1_rg = Parameter(state_dict_pretrain['features.0.bias'], requires_grad=True)     # bias64_1
+        self.w1_2_rg = Parameter(state_dict_pretrain['features.2.weight'], requires_grad=True)   # weight64_2
+        self.b1_2_rg = Parameter(state_dict_pretrain['features.2.bias'], requires_grad=True)     # bias64_2
 
         '''
         Pre-trained VGG weights - 2nd block
         '''
-        self.w2_1 = Parameter(state_dict_pretrain['features.5.weight'], requires_grad=True)   # weight128_1
-        self.b2_1 = Parameter(state_dict_pretrain['features.5.bias'], requires_grad=True)     # bias128_1
-        self.w2_2 = Parameter(state_dict_pretrain['features.7.weight'], requires_grad=True)   # weight128_2
-        self.b2_2 = Parameter(state_dict_pretrain['features.7.bias'], requires_grad=True)     # bias128_2
+        self.w2_1_ba = Parameter(state_dict_pretrain['features.5.weight'], requires_grad=True)   # weight128_1
+        self.b2_1_ba = Parameter(state_dict_pretrain['features.5.bias'], requires_grad=True)     # bias128_1
+        self.w2_2_ba = Parameter(state_dict_pretrain['features.7.weight'], requires_grad=True)   # weight128_2
+        self.b2_2_ba = Parameter(state_dict_pretrain['features.7.bias'], requires_grad=True)     # bias128_2
+        self.w2_1_rg = Parameter(state_dict_pretrain['features.5.weight'], requires_grad=True)   # weight128_1
+        self.b2_1_rg = Parameter(state_dict_pretrain['features.5.bias'], requires_grad=True)     # bias128_1
+        self.w2_2_rg = Parameter(state_dict_pretrain['features.7.weight'], requires_grad=True)   # weight128_2
+        self.b2_2_rg = Parameter(state_dict_pretrain['features.7.bias'], requires_grad=True)     # bias128_2
 
         '''
         Pre-trained VGG weights - 3rd block
         '''
-        self.w3_1 = Parameter(state_dict_pretrain['features.10.weight'], requires_grad=True)  # weight256_1
-        self.b3_1 = Parameter(state_dict_pretrain['features.10.bias'], requires_grad=True)    # bias256_1
-        self.w3_2 = Parameter(state_dict_pretrain['features.12.weight'], requires_grad=True)  # weight256_2
-        self.b3_2 = Parameter(state_dict_pretrain['features.12.bias'], requires_grad=True)    # bias256_2
-        self.w3_3 = Parameter(state_dict_pretrain['features.14.weight'], requires_grad=True)  # weight256_3
-        self.b3_3 = Parameter(state_dict_pretrain['features.14.bias'], requires_grad=True)    # bias256_3
+        self.w3_1_ba = Parameter(state_dict_pretrain['features.10.weight'], requires_grad=True)  # weight256_1
+        self.b3_1_ba = Parameter(state_dict_pretrain['features.10.bias'], requires_grad=True)    # bias256_1
+        self.w3_2_ba = Parameter(state_dict_pretrain['features.12.weight'], requires_grad=True)  # weight256_2
+        self.b3_2_ba = Parameter(state_dict_pretrain['features.12.bias'], requires_grad=True)    # bias256_2
+        self.w3_3_ba = Parameter(state_dict_pretrain['features.14.weight'], requires_grad=True)  # weight256_3
+        self.b3_3_ba = Parameter(state_dict_pretrain['features.14.bias'], requires_grad=True)    # bias256_3
+        self.w3_1_rg = Parameter(state_dict_pretrain['features.10.weight'], requires_grad=True)  # weight256_1
+        self.b3_1_rg = Parameter(state_dict_pretrain['features.10.bias'], requires_grad=True)    # bias256_1
+        self.w3_2_rg = Parameter(state_dict_pretrain['features.12.weight'], requires_grad=True)  # weight256_2
+        self.b3_2_rg = Parameter(state_dict_pretrain['features.12.bias'], requires_grad=True)    # bias256_2
+        self.w3_3_rg = Parameter(state_dict_pretrain['features.14.weight'], requires_grad=True)  # weight256_3
+        self.b3_3_rg = Parameter(state_dict_pretrain['features.14.bias'], requires_grad=True)    # bias256_3
+
 
         # Branches
         '''Boundary Aware block'''
         self.c1_ba = nn.Sequential(
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.Conv2d(in_channels=64, out_channels=1, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
             nn.ReLU(inplace=True)
         )
         self.c2_ba = nn.Sequential(
             nn.Upsample(size=(112, 112), mode='bilinear'),
-            nn.Conv2d(in_channels=128, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.Conv2d(in_channels=128, out_channels=1, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
             nn.ReLU(inplace=True)
         )
         self.c3_ba = nn.Sequential(
             nn.Upsample(size=(112, 112), mode='bilinear'),
-            nn.Conv2d(in_channels=256, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.Conv2d(in_channels=256, out_channels=1, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
             nn.ReLU(inplace=True)
         )
         self.c4_ba = nn.Sequential(
-            nn.Conv2d(in_channels=192, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=64, out_channels=2, kernel_size=(3, 3), stride=(1, 1), padding=(1,1)),
+            nn.Conv2d(in_channels=3, out_channels=1, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
         )
 
         '''Region block'''
         self.c1_rg = nn.Sequential(
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.Conv2d(in_channels=64, out_channels=1, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
             nn.ReLU(inplace=True)
         )
         self.c2_rg = nn.Sequential(
             nn.Upsample(size=(112, 112), mode='bilinear'),
-            nn.Conv2d(in_channels=128, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.Conv2d(in_channels=128, out_channels=1, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
             nn.ReLU(inplace=True)
         )
         self.c3_rg = nn.Sequential(
             nn.Upsample(size=(112, 112), mode='bilinear'),
-            nn.Conv2d(in_channels=256, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.Conv2d(in_channels=256, out_channels=1, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
             nn.ReLU(inplace=True)
         )
         self.c4_rg = nn.Sequential(
-            nn.Conv2d(in_channels=192, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=64, out_channels=2, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.Conv2d(in_channels=3, out_channels=1, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
         )
 
         '''Final combination block'''
         self.c_fin = nn.Sequential(
-            nn.Conv2d(in_channels=4, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
+            nn.Conv2d(in_channels=6, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
             nn.ReLU(inplace=True),
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
             nn.ReLU(inplace=True),
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3,3), stride=(1,1), padding=(1,1)),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=64, out_channels=2, kernel_size=(1,1), stride=(1,1), padding=0),
+            nn.Conv2d(in_channels=64, out_channels=1, kernel_size=(1,1), stride=(1,1), padding=0),
         )
 
     def forward(self, x):
-        # Define Three Scale-Invariant CNN (Si)
+        """[1] Define Three Scale-Invariant CNN (Si) for Boundary part"""
         '''1st: keep the kernel by scale=1 -> 3x3, named sz+block+index'''
-        out1_sc1, out2_sc1, out3_sc1 = self.vgg_forward(x, 1,
-                                                        self.w1_1, self.b1_1, self.w1_2, self.b1_2,
-                                                        self.w2_1, self.b2_1, self.w2_2, self.b2_2,
-                                                        self.w3_1, self.b3_1, self.w3_2, self.b3_2, self.w3_3, self.b3_3)
+        out1_sc1_ba, out2_sc1_ba, out3_sc1_ba = self.vgg_forward(x, 1,
+                                                                 self.w1_1_ba, self.b1_1_ba, self.w1_2_ba, self.b1_2_ba,
+                                                                 self.w2_1_ba, self.b2_1_ba, self.w2_2_ba, self.b2_2_ba,
+                                                                 self.w3_1_ba, self.b3_1_ba, self.w3_2_ba, self.b3_2_ba, self.w3_3_ba, self.b3_3_ba)
 
         '''2nd: expand the kernel by scale=1.666 -> 5x5, named sz+block+index'''
-        out1_sc2, out2_sc2, out3_sc2 = self.vgg_forward(x, 1.66666666,
-                                                        self.w1_1, self.b1_1, self.w1_2, self.b1_2,
-                                                        self.w2_1, self.b2_1, self.w2_2, self.b2_2,
-                                                        self.w3_1, self.b3_1, self.w3_2, self.b3_2, self.w3_3, self.b3_3)
+        out1_sc2_ba, out2_sc2_ba, out3_sc2_ba = self.vgg_forward(x, 1.66666666,
+                                                                 self.w1_1_ba, self.b1_1_ba, self.w1_2_ba, self.b1_2_ba,
+                                                                 self.w2_1_ba, self.b2_1_ba, self.w2_2_ba, self.b2_2_ba,
+                                                                 self.w3_1_ba, self.b3_1_ba, self.w3_2_ba, self.b3_2_ba, self.w3_3_ba, self.b3_3_ba)
 
         '''3rd: expand the kernel by scale=2.333 -> 7x7, named sz+block+index'''
-        out1_sc3, out2_sc3, out3_sc3 = self.vgg_forward(x, 2.33333333,
-                                                        self.w1_1, self.b1_1, self.w1_2, self.b1_2,
-                                                        self.w2_1, self.b2_1, self.w2_2, self.b2_2,
-                                                        self.w3_1, self.b3_1, self.w3_2, self.b3_2, self.w3_3, self.b3_3)
+        out1_sc3_ba, out2_sc3_ba, out3_sc3_ba = self.vgg_forward(x, 2.33333333,
+                                                                 self.w1_1_ba, self.b1_1_ba, self.w1_2_ba, self.b1_2_ba,
+                                                                 self.w2_1_ba, self.b2_1_ba, self.w2_2_ba, self.b2_2_ba,
+                                                                 self.w3_1_ba, self.b3_1_ba, self.w3_2_ba, self.b3_2_ba, self.w3_3_ba, self.b3_3_ba)
         
         # Compare vertically (along channel) for 'Boundary' & 'Region'
-        out1_cat = torch.max(out1_sc1, torch.max(out1_sc2, out1_sc3))
-        out2_cat = torch.max(out2_sc1, torch.max(out2_sc2, out2_sc3))
-        out3_cat = torch.max(out3_sc1, torch.max(out3_sc2, out3_sc3))
+        out1_em_ba = self.c1_ba(torch.max(out1_sc1_ba, torch.max(out1_sc2_ba, out1_sc3_ba)))
+        out2_em_ba = self.c2_ba(torch.max(out2_sc1_ba, torch.max(out2_sc2_ba, out2_sc3_ba)))
+        out3_em_ba = self.c3_ba(torch.max(out3_sc1_ba, torch.max(out3_sc2_ba, out3_sc3_ba)))
 
         # Up-Stream to Boundary output
         '''Boundary branch: upsample & conv to concatenate horizontally'''
-        out1_cat_ba = self.c1_ba(out1_cat)
-        out2_cat_ba = self.c2_ba(out2_cat)
-        out3_cat_ba = self.c3_ba(out3_cat)
-        out_cat_ba = torch.cat((out1_cat_ba, out2_cat_ba, out3_cat_ba), 1)
-        out_ba = F.sigmoid(self.c4_ba(out_cat_ba))     # used as input for final predict
+        out_cat_ba = torch.cat((out1_em_ba, out2_em_ba, out3_em_ba), 1)
+        out_ba = self.c4_ba(out_cat_ba)     # used as input for final predict
+
+
+        """[2] Define Three Scale-Invariant CNN (Si) for Region part"""
+        '''1st: keep the kernel by scale=1 -> 3x3, named sz+block+index'''
+        out1_sc1_rg, out2_sc1_rg, out3_sc1_rg = self.vgg_forward(x, 1,
+                                                                 self.w1_1_rg, self.b1_1_rg, self.w1_2_rg, self.b1_2_rg,
+                                                                 self.w2_1_rg, self.b2_1_rg, self.w2_2_rg, self.b2_2_rg,
+                                                                 self.w3_1_rg, self.b3_1_rg, self.w3_2_rg, self.b3_2_rg, self.w3_3_rg, self.b3_3_rg)
+
+        '''2nd: expand the kernel by scale=1.666 -> 5x5, named sz+block+index'''
+        out1_sc2_rg, out2_sc2_rg, out3_sc2_rg = self.vgg_forward(x, 1.66666666,
+                                                                 self.w1_1_rg, self.b1_1_rg, self.w1_2_rg, self.b1_2_rg,
+                                                                 self.w2_1_rg, self.b2_1_rg, self.w2_2_rg, self.b2_2_rg,
+                                                                 self.w3_1_rg, self.b3_1_rg, self.w3_2_rg, self.b3_2_rg, self.w3_3_rg, self.b3_3_rg)
+
+        '''3rd: expand the kernel by scale=2.333 -> 7x7, named sz+block+index'''
+        out1_sc3_rg, out2_sc3_rg, out3_sc3_rg = self.vgg_forward(x, 2.33333333,
+                                                                 self.w1_1_rg, self.b1_1_rg, self.w1_2_rg, self.b1_2_rg,
+                                                                 self.w2_1_rg, self.b2_1_rg, self.w2_2_rg, self.b2_2_rg,
+                                                                 self.w3_1_rg, self.b3_1_rg, self.w3_2_rg, self.b3_2_rg, self.w3_3_rg, self.b3_3_rg)
+        
+        # Compare vertically (along channel) for 'Boundary' & 'Region'
+        out1_em_rg = self.c1_rg(torch.max(out1_sc1_rg, torch.max(out1_sc2_rg, out1_sc3_rg)))
+        out2_em_rg = self.c2_rg(torch.max(out2_sc1_rg, torch.max(out2_sc2_rg, out2_sc3_rg)))
+        out3_em_rg = self.c3_rg(torch.max(out3_sc1_rg, torch.max(out3_sc2_rg, out3_sc3_rg)))
 
         # Bottom-Stream to Region output
-        '''Regions branch: upsample & conv to concatenate horizontally'''
-        out1_cat_rg = self.c1_rg(out1_cat)
-        out2_cat_rg = self.c2_rg(out2_cat)
-        out3_cat_rg = self.c3_rg(out3_cat)
-        out_cat_rg = torch.cat((out1_cat_rg, out2_cat_rg, out3_cat_rg), 1)
-        out_rg = F.sigmoid(self.c4_rg(out_cat_rg))     # used as input for final predict
+        '''Boundary branch: upsample & conv to concatenate horizontally'''
+        out_cat_rg = torch.cat((out1_em_rg, out2_em_rg, out3_em_rg), 1)
+        out_rg = self.c4_ba(out_cat_rg)     # used as input for final predict
 
+
+        """[3] Final combination for Boundary and Region part"""
         # Combination Stream to final Region output
-        out_cat_fin = torch.cat((out_ba, out_rg), 1)
-        out_fin = F.sigmoid(self.c_fin(out_cat_fin))
+        out_cat_fin = torch.cat((out_cat_ba, out_cat_rg), 1)
+        out_fin = self.c_fin(out_cat_fin)
 
-        return out_ba, out_rg, out_fin
+        """Activation for all outputs"""
+        ba1 = F.sigmoid(out1_em_ba)
+        ba2 = F.sigmoid(out2_em_ba)
+        ba3 = F.sigmoid(out3_em_ba)
+        ba_all = F.sigmoid(out_ba)
+
+        rg1 = F.sigmoid(out1_em_rg)
+        rg2 = F.sigmoid(out1_em_rg)
+        rg3 = F.sigmoid(out1_em_rg)
+        rg_all = F.sigmoid(out_rg)
+
+        fin = F.sigmoid(out_fin)
+
+        return ba_all, ba1, ba2, ba3, rg_all, rg1, rg2, rg3, fin
 
     def vgg_forward(self, x, scale,
                     w1_1, b1_1, w1_2, b1_2,

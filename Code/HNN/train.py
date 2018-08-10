@@ -34,18 +34,18 @@ from myloss import *
 
 
 '''Set up Training Parameters'''
-parser = argparse.ArgumentParser(description='Pytorch: UNet CNN')
-parser.add_argument('--model_name', default='UNet',
-                    help='model name used for U-Net')
+parser = argparse.ArgumentParser(description='Pytorch: HNN CNN')
+parser.add_argument('--model_name', default='HNN',
+                    help='model name used for HNN')
 parser.add_argument('--workers', default=48, type=int, metavar='N',
                     help='number of data loading worker')
-parser.add_argument('--epochs', default=8000, type=int, metavar='N',
+parser.add_argument('--epochs', default=800, type=int, metavar='N',
                     help='number of epochs for training network')
 parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
 parser.add_argument('--batch_size', default=48, type=int, metavar='N',
                     help='mini-batch size for training (default: 64)')
-parser.add_argument('--lr', default=0.0002, type=float, metavar='LR',
+parser.add_argument('--lr', default=0.0001, type=float, metavar='LR',
                     help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum for the training optimizer')
@@ -55,22 +55,22 @@ parser.add_argument('--pf', default=1, type=int, metavar='N',
                     help='training print frequency (default: 10)')
 parser.add_argument('--df', default=15, type=int, metavar='N',
                     help='training display image frequency (default: 10)')
-parser.add_argument('--ef', default=20, type=int, metavar='N',
+parser.add_argument('--ef', default=10, type=int, metavar='N',
                     help='evaluate print frequency (default: 2)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
-                    help='path to latest checkpoint (default: none)')  # --resume=models/UNet/model_best_UNet.pth.tar
+                    help='path to latest checkpoint (default: none)')  # --resume=models/HNN/model_best_HNN.pth.tar
 
 '''Set up Training Data Directory'''
-parser.add_argument('--train_image_data_dir', default='../../Data_Segmentation/all_train_data_UNet/image', type=str, metavar='PATH',
+parser.add_argument('--train_image_data_dir', default='../../Data_Segmentation/all_train_data_HNN/image', type=str, metavar='PATH',
                     help='path to image data')
-parser.add_argument('--train_mask_data_dir', default='../../Data_Segmentation/all_train_data_UNet/mask', type=str, metavar='PATH',
+parser.add_argument('--train_mask_data_dir', default='../../Data_Segmentation/all_train_data_HNN/mask', type=str, metavar='PATH',
                     help='path to mask data')
-parser.add_argument('--train_edge_data_dir', default='../../Data_Segmentation/all_train_data_UNet/edge', type=str, metavar='PATH',
+parser.add_argument('--train_edge_data_dir', default='../../Data_Segmentation/all_train_data_HNN/edge', type=str, metavar='PATH',
                     help='path to edge data')
 
-parser.add_argument('--train_list_filename', default='../../Data_Segmentation/all_train_data_UNet/dir/train_list.txt', type=str, metavar='PATH',   ##### need to change
+parser.add_argument('--train_list_filename', default='../../Data_Segmentation/all_train_data_HNN/dir/train_list.txt', type=str, metavar='PATH',   ##### need to change
                     help='path to train data list txt file')
-parser.add_argument('--semitrain_list_dir', default='../../Data_Segmentation/all_train_data_UNet/dir/semi_list/', type=str, metavar='PATH',   ##### need to change
+parser.add_argument('--semitrain_list_dir', default='../../Data_Segmentation/all_train_data_HNN/dir/semi_list/', type=str, metavar='PATH',   ##### need to change
                     help='path to semi-train data list folder, for save or retrieve')
 
 '''Setp up Testing Data Directory'''
@@ -109,8 +109,8 @@ def main():
     global args, best_m
     args = parser.parse_args()
 
-    ''' Initialize and load model (models: U-Net) '''
-    model = UNet(n_channels=3, n_classes=1)
+    ''' Initialize and load model (models: HNN-Net) '''
+    model = HNNNet()
     print(model)
 
     model.cuda()
@@ -118,7 +118,7 @@ def main():
     cudnn.benchmark = True
 
     ''' Define loss function (criterion) and optimizer '''
-    criterion = SoftDiceLoss().cuda()
+    criterion = nn.BCELoss().cuda()
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=args.lr,
                                 momentum=args.momentum,
@@ -243,7 +243,7 @@ def main():
     STAGE 2: Progressive semi-supervise training using distanced CT slices (1~8)
     '''
     ############################################################################################################################################
-    STAGE_semi = False
+    STAGE_semi = True
     if STAGE_semi is True:
         for i, dis_include in enumerate(include_semi_set):
             ################################# Predict the neighbourhood slice in distance range (Mask, Edge)####################################
@@ -337,10 +337,17 @@ def train(train_loader, model, criterion, optimizer, epoch, data_logger=None, cl
         mask_var = torch.autograd.Variable(mask).type(torch.FloatTensor).cuda()
 
         # 1) output FINAL_REGION from models
-        output = model(input_var)
+        output1, output2, output3, output4, output5, output6 = model(input_var)
+        output = output6
 
         # 2) compute the current loss
-        loss = criterion(output, mask_var)
+        loss1 = criterion(output1, mask_var)
+        loss2 = criterion(output2, mask_var)
+        loss3 = criterion(output3, mask_var)
+        loss4 = criterion(output4, mask_var)
+        loss5 = criterion(output5, mask_var)
+        loss6 = criterion(output6, mask_var)
+        loss = loss1 + loss2 + loss3 + loss4 + loss5 + loss6
 
         # 3) record loss and metrics (DSC_slice)
         losses.update(loss.data[0], input.size(0))
@@ -388,10 +395,17 @@ def validate(val_loader, model, criterion, epoch, data_logger=None, class_names=
         mask_var = torch.autograd.Variable(mask).type(torch.FloatTensor).cuda()
 
         # 1) output FINAL_REGION from models
-        output = model(input_var)
+        output1, output2, output3, output4, output5, output6 = model(input_var)
+        output = output6
 
         # 2) compute the current loss on validation: loss_boundary, loss_region, loss_final_region
-        loss = criterion(output, mask_var)
+        loss1 = criterion(output1, mask_var)
+        loss2 = criterion(output2, mask_var)
+        loss3 = criterion(output3, mask_var)
+        loss4 = criterion(output4, mask_var)
+        loss5 = criterion(output5, mask_var)
+        loss6 = criterion(output6, mask_var)
+        loss = loss1 + loss2 + loss3 + loss4 + loss5 + loss6
 
         # 3) record loss and metrics (DSC_volume)
         losses.update(loss.data[0], input.size(0))

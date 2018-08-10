@@ -88,6 +88,7 @@ class outconv(nn.Module):
 
     def forward(self, x):
         x = self.conv(x)
+        x = F.sigmoid(x)
         return x
 
 

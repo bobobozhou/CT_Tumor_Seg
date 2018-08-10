@@ -2,18 +2,17 @@ clear
 clc
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% MATLAB Script for Pre-Processing Public Dataset
-% NSCLC Radiogenomics: The Cancer Imaging Archive (TCIA) Public Access
+% MATLAB Script for Pre-Processing erck training Dataset
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1. Get the tumor middle slice
 % 2. Crop tumor bbox (<70pixels: 70x70 ; >70pixels: resample->70x70)
 
 %% load raw 3d data
-data_dir = '../../Data_Segmentation/public_train_data/Raw_DATA/3D_normalized';
+data_dir = '../../Data_Segmentation/merck_train_data/Raw_DATA/HDR/';
 files = dir(data_dir);
-save_dir = '../../Data_Segmentation/public_train_data/';
+save_dir = '../../Data_Segmentation/merck_train_data/';
 
-fileID_train = fopen(strcat(save_dir,'dir/','train_list_tcia.txt'),'wt');
+fileID_train = fopen(strcat(save_dir,'dir/','train_list_merck.txt'),'wt');
 
 ind_case = 0;
 for i = 3:4:length(files)
@@ -24,25 +23,24 @@ for i = 3:4:length(files)
     filename = files(i).name;
     if contains(filename, '_CT.hdr')
         file_dir = strcat(files(i).folder, '/',...
-            strtok(filename, '_CT.hdr'),'_CT');
+            strrep(filename, '_CT.hdr','_CT.hdr'));
         V_ct = analyze75read(file_dir);
     end
     V_ct = uint16(V_ct);
 
     % imread Label volume
     filename = files(i+2).name;
-    if contains(filename, '_label.hdr')
+    if contains(filename, '_CT.mask_manual.hdr')
         file_dir = strcat(files(i+2).folder, '/',...
-            strtok(filename, '_label.hdr'),'_label');
+            strrep(filename, '_CT.mask_manual.hdr','_CT.mask_manual.hdr'));
         V_label = analyze75read(file_dir);
     end
     V_label = uint16(V_label);
 
-    %% select middle slice & crop the tumor
+    %% get the merck middle slice
     % get the middle slice index
     [~,~,z] = ind2sub(size(V_label), find(V_label==1));
-    [ min_z, max_z ] = middle_cut(z);
-    z_mid = round((max_z + min_z)/2);
+    z_mid = unique(z);
     [x,y] = ind2sub(size(V_label(:,:,z_mid)), find(V_label(:,:,z_mid)==1));
     min_x = min(x); max_x = max(x);
     min_y = min(y); max_y = max(y);
@@ -50,7 +48,7 @@ for i = 3:4:length(files)
     % crop the tumor
     x_size = max_x - min_x; y_size = max_y - min_y;
     
-    for zz = min_z:max_z
+    for zz = 1:size(V_label, 3)
         if x_size<=60 && y_size<=60  % if tumor<60x60, directly crop 70x70
             x_start = min_x - (70 - x_size)/2; x_end = max_x + (70 - x_size)/2;
             y_start = min_y - (70 - y_size)/2; y_end = max_y + (70 - y_size)/2; 
@@ -63,15 +61,16 @@ for i = 3:4:length(files)
         end
         
         % save data on RECIST-slice
+        filename = filename(~isspace(filename));
         if zz == z_mid
             img_patch_tumor = V_ct(x_start:x_end, y_start:y_end, zz);
             mask_patch_tumor = V_label(x_start:x_end, y_start:y_end, zz);
             edge_patch_tumor = uint16(edge(mask_patch_tumor,'canny',0.5));
 
             % save the img & label & txt information
-            img_file_name = strcat(strrep(filename, '_label.hdr', ''), '_img_train_', string(zz), '.png');
-            mask_file_name = strcat(strrep(filename, '_label.hdr', ''), '_mask_train_', string(zz), '.png');
-            edge_file_name = strcat(strrep(filename, '_label.hdr', ''), '_edge_train_', string(zz), '.png');
+            img_file_name = strcat(strrep(filename, '_CT.mask_manual.hdr', ''), '_img_train_', string(zz), '.png');
+            mask_file_name = strcat(strrep(filename, '_CT.mask_manual.hdr', ''), '_mask_train_', string(zz), '.png');
+            edge_file_name = strcat(strrep(filename, '_CT.mask_manual.hdr', ''), '_edge_train_', string(zz), '.png');
 
             img_save = char(strcat(save_dir, 'image/', img_file_name));
             imwrite(img_patch_tumor, img_save);
@@ -79,9 +78,9 @@ for i = 3:4:length(files)
             imwrite(mask_patch_tumor, mask_save);
             edge_save = char(strcat(save_dir, 'edge/', edge_file_name));
             imwrite(edge_patch_tumor, edge_save);
-
-            dis_to_center = sprintf('%0.2f', abs(zz - z_mid));
         
+            dis_to_center = sprintf('%0.2f', abs(zz - z_mid));
+
             line = char(strcat(string(ind_case), " ", string(dis_to_center), " ", img_file_name, " ", ...
                 mask_file_name, " ", ...
                 edge_file_name, ...
@@ -92,7 +91,7 @@ for i = 3:4:length(files)
             img_patch_tumor = V_ct(x_start:x_end, y_start:y_end, zz);
             
             % save the img & txt information
-            img_file_name = strcat(strrep(filename, '_label.hdr', ''), '_img_train_', string(zz), '.png');
+            img_file_name = strcat(strrep(filename, '_CT.mask_manual.hdr', ''), '_img_train_', string(zz), '.png');
             mask_file_name = 'NAN.png';
             edge_file_name = 'NAN.png';
             
@@ -107,7 +106,6 @@ for i = 3:4:length(files)
                 " 0 0 0 0 \r\n"));
             fprintf(fileID_train, line);
             
-
         end
 
     end
@@ -115,5 +113,3 @@ for i = 3:4:length(files)
 end
 
 fclose(fileID_train);
-
-

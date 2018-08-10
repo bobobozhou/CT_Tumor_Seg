@@ -13,7 +13,7 @@ data_dir = '../../Data_Segmentation/merck_data/Raw_DATA/ALL/';
 xlsx = '../../Data_Segmentation/merck_data/Raw_DATA/training_tumor_info.xlsx';
 save_dir = '../../Data_Segmentation/merck_data/';
 
-fileID_train = fopen(strcat(save_dir,'dir/','train_list.txt'),'wt');
+% fileID_train = fopen(strcat(save_dir,'dir/','train_list.txt'),'wt');
 
 [num, txt, raw] = xlsread(xlsx);
 CT_list = raw(:,1);
@@ -58,29 +58,29 @@ for i = 1:length(CT_list)
         mask_patch_tumor = I_label(x_start:x_end, y_start:y_end);
         edge_patch_tumor = uint16(edge(mask_patch_tumor,'canny',0.5));
 
-        % save the img & label & txt information
-        name_label = label_list{i};
-        name_main = name_label(1:strfind(name_label, '_label.png')-1);
-        name_main = name_main(~isspace(name_main));
-        
-        img_file_name = strcat(name_main, '_tumor', '_img_train_', '.png');
-        mask_file_name = strcat(name_main, '_tumor', '_mask_train_', '.png');
-        edge_file_name = strcat(name_main, '_tumor', '_edge_train_', '.png');
-
-        img_save = char(strcat(save_dir, 'image/', img_file_name));
-        imwrite(img_patch_tumor, img_save);
-        mask_save = char(strcat(save_dir, 'mask/', mask_file_name));
-        imwrite(mask_patch_tumor, mask_save);
-        edge_save = char(strcat(save_dir, 'edge/', edge_file_name));
-        imwrite(edge_patch_tumor, edge_save);
-        
-        dis_to_center = sprintf('%0.2f', 0);
-
-        line = char(strcat(string(0), " ", string(dis_to_center), " ", img_file_name, " ", ...
-            mask_file_name, " ", ...
-            edge_file_name, ...
-            " 0 0 0 0 \r\n"));
-        fprintf(fileID_train, line);
+% %         % save the img & label & txt information
+% %         name_label = label_list{i};
+% %         name_main = name_label(1:strfind(name_label, '_label.png')-1);
+% %         name_main = name_main(~isspace(name_main));
+% %         
+% %         img_file_name = strcat(name_main, '_tumor', '_img_train_', '.png');
+% %         mask_file_name = strcat(name_main, '_tumor', '_mask_train_', '.png');
+% %         edge_file_name = strcat(name_main, '_tumor', '_edge_train_', '.png');
+% % 
+% %         img_save = char(strcat(save_dir, 'image/', img_file_name));
+% %         imwrite(img_patch_tumor, img_save);
+% %         mask_save = char(strcat(save_dir, 'mask/', mask_file_name));
+% %         imwrite(mask_patch_tumor, mask_save);
+% %         edge_save = char(strcat(save_dir, 'edge/', edge_file_name));
+% %         imwrite(edge_patch_tumor, edge_save);
+% %         
+% %         dis_to_center = sprintf('%0.2f', 0);
+% % 
+% %         line = char(strcat(string(0), " ", string(dis_to_center), " ", img_file_name, " ", ...
+% %             mask_file_name, " ", ...
+% %             edge_file_name, ...
+% %             " 0 0 0 0 \r\n"));
+% %         fprintf(fileID_train, line);
 
 %         figure(1),
 %         subplot(1,4,1); I=imread(img_save); imshow(I,[-1000 3000]);
@@ -139,6 +139,6 @@ for i = 1:length(CT_list)
 
 end
 
-fclose(fileID_train);
+% fclose(fileID_train);
 
 

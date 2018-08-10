@@ -9,11 +9,11 @@ clc
 % 2. Crop tumor bbox (<70pixels: 70x70 ; >70pixels: resample->70x70)
 
 %% load raw 3d data
-data_dir = '../../Data_Segmentation/public_data/Raw_DATA/3D_normalized';
+data_dir = '../../Data_Segmentation/public_test_data/Raw_DATA/3D_normalized';
 files = dir(data_dir);
-save_dir = '../../Data_Segmentation/public_data/';
+save_dir = '../../Data_Segmentation/public_test_data/';
 
-fileID_test = fopen(strcat(save_dir,'dir/','test_list.txt'),'wt');
+fileID_test = fopen(strcat(save_dir,'dir/','test_list_tcia.txt'),'wt');
 
 ind_case = 0;
 for i = 3:4:length(files)
@@ -72,9 +72,9 @@ for i = 3:4:length(files)
         edge_patch_tumor = uint16(edge(mask_patch_tumor,'canny',0.5));
 
         % save the img & label & txt information
-        img_file_name = strcat(strtok(filename, '_label.hdr'), '_img_test_', string(zz), '.png');
-        mask_file_name = strcat(strtok(filename, '_label.hdr'), '_mask_test_', string(zz), '.png');
-        edge_file_name = strcat(strtok(filename, '_label.hdr'), '_edge_test_', string(zz), '.png');
+        img_file_name = strcat(strrep(filename, '_label.hdr', ''), '_img_test_', string(zz), '.png');
+        mask_file_name = strcat(strrep(filename, '_label.hdr', ''), '_mask_test_', string(zz), '.png');
+        edge_file_name = strcat(strrep(filename, '_label.hdr', ''), '_edge_test_', string(zz), '.png');
         
         img_save = char(strcat(save_dir, 'image/', img_file_name));
         imwrite(img_patch_tumor, img_save);
@@ -83,7 +83,7 @@ for i = 3:4:length(files)
         edge_save = char(strcat(save_dir, 'edge/', edge_file_name));
         imwrite(edge_patch_tumor, edge_save);
         
-        dis_to_center = sprintf('%0.2f', abs(zz - z_mid)/(max_z - min_z));
+        dis_to_center = sprintf('%0.2f', abs(zz - z_mid));
         
         line = char(strcat(string(ind_case), " ", string(dis_to_center), " ", img_file_name, " ", ...
                 mask_file_name, " ", ...
